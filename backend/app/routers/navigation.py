@@ -4,9 +4,12 @@ import httpx
 from fastapi import APIRouter, HTTPException
 from datetime import datetime
 
+import math
+
 from app.schemas.navigation import (
     RouteRequest, RouteResponse, FloodWarning,
     NavStep, RouteRiskPoint, AlternativeRoute,
+    SafeZoneRequest, SafeZoneResponse, SafePlace,
 )
 from app.config import settings
 from app.services.flood_ml import flood_model
@@ -17,6 +20,16 @@ router = APIRouter(prefix="/navigation", tags=["navigation"])
 
 DIRECTIONS_URL = "https://maps.googleapis.com/maps/api/directions/json"
 GEOCODE_URL    = "https://maps.googleapis.com/maps/api/geocode/json"
+PLACES_URL     = "https://maps.googleapis.com/maps/api/place/nearbysearch/json"
+
+# Safe place types searched in priority order
+SAFE_PLACE_TYPES = ["police", "hospital", "fire_station", "transit_station"]
+SAFE_PLACE_LABELS = {
+    "police":          "Police Station",
+    "hospital":        "Hospital",
+    "fire_station":    "Fire Station",
+    "transit_station": "Transit Station",
+}
 
 
 async def _geocode(address: str) -> tuple[float, float]:
@@ -263,4 +276,96 @@ async def get_safe_route(body: RouteRequest):
         alternative_route=alternative_route,
         steps=primary_nav,
         route_risk_points=primary_risk_pts,
+    )
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SafeZone endpoint
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _haversine_km(lat1: float, lng1: float, lat2: float, lng2: float) -> float:
+    """Return great-circle distance in km between two lat/lng points."""
+    R = 6371.0
+    dlat = math.radians(lat2 - lat1)
+    dlng = math.radians(lng2 - lng1)
+    a = math.sin(dlat / 2) ** 2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlng / 2) ** 2
+    return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+
+
+async def _search_places(lat: float, lng: float, place_type: str) -> list[dict]:
+    """Search Google Places Nearby for a given type within 10 km."""
+    params = {
+        "location": f"{lat},{lng}",
+        "radius":   10000,           # 10 km
+        "type":     place_type,
+        "key":      settings.GOOGLE_MAPS_API_KEY,
+    }
+    try:
+        async with httpx.AsyncClient(timeout=8.0) as client:
+            resp = await client.get(PLACES_URL, params=params)
+        data = resp.json()
+        return data.get("results", [])
+    except Exception:
+        return []
+
+
+@router.post("/safezone", response_model=SafeZoneResponse)
+async def get_safezone(body: SafeZoneRequest):
+    """
+    Find the nearest safety location (police, hospital, fire station, transit)
+    to the given coordinates and return walking/driving directions there.
+
+    Intended for use when flood risk >= 60/80 (High or Severe).
+    """
+    if not settings.GOOGLE_MAPS_API_KEY:
+        raise HTTPException(status_code=503, detail="Google Maps API key not configured")
+
+    # Search all safe place types in parallel
+    all_results = await asyncio.gather(
+        *[_search_places(body.lat, body.lng, pt) for pt in SAFE_PLACE_TYPES]
+    )
+
+    # Flatten and attach distance + type label to every candidate
+    candidates: list[dict] = []
+    for place_type, results in zip(SAFE_PLACE_TYPES, all_results):
+        for place in results:
+            loc = place.get("geometry", {}).get("location", {})
+            plat, plng = loc.get("lat"), loc.get("lng")
+            if plat is None or plng is None:
+                continue
+            candidates.append({
+                "name":       place.get("name", "Unknown"),
+                "place_type": SAFE_PLACE_LABELS[place_type],
+                "lat":        plat,
+                "lng":        plng,
+                "distance_km": _haversine_km(body.lat, body.lng, plat, plng),
+                "vicinity":   place.get("vicinity", ""),
+            })
+
+    if not candidates:
+        raise HTTPException(status_code=404, detail="No safe locations found within 10 km")
+
+    # Pick the closest one overall
+    nearest = min(candidates, key=lambda c: c["distance_km"])
+
+    # Get driving directions from user location to nearest safe place
+    origin_str = f"{body.lat},{body.lng}"
+    dest_str   = f"{nearest['lat']},{nearest['lng']}"
+    routes = await _get_directions(origin_str, dest_str)
+    route = routes[0]
+    nav_steps = _parse_nav_steps(route["raw_steps"])
+
+    dist_text = f"{nearest['distance_km']:.1f} km"
+    message = (
+        f"Nearest {nearest['place_type']}: {nearest['name']} "
+        f"({dist_text} away). Route calculated — proceed to safety immediately."
+    )
+
+    return SafeZoneResponse(
+        safe_place=SafePlace(**nearest),
+        distance=route["distance"],
+        duration=route["duration"],
+        polyline=route["polyline"],
+        steps=nav_steps,
+        message=message,
     )

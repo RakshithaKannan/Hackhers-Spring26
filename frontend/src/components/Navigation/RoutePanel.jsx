@@ -1,10 +1,10 @@
 import { useState, useRef } from 'react'
 import { Autocomplete, useJsApiLoader } from '@react-google-maps/api'
-import { getRoute } from '../../services/api'
+import { getRoute, getSafeZone } from '../../services/api'
 import { useLanguage } from '../../context/LanguageContext'
 import {
   Navigation, AlertTriangle, CheckCircle, Loader,
-  ArrowLeft, ArrowRight, ArrowUp, RotateCcw, MapPin, Flag,
+  ArrowLeft, ArrowRight, ArrowUp, RotateCcw, MapPin, Flag, ShieldAlert,
 } from 'lucide-react'
 
 const MAPS_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY
@@ -42,6 +42,8 @@ export default function RoutePanel({ onRouteResult }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [activeStep, setActiveStep] = useState(0)
+  const [safeZoneLoading, setSafeZoneLoading] = useState(false)
+  const [safeZoneError, setSafeZoneError] = useState('')
   const originAcRef = useRef(null)
   const destAcRef = useRef(null)
 
@@ -63,6 +65,33 @@ export default function RoutePanel({ onRouteResult }) {
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleSafeZone = () => {
+    if (!navigator.geolocation) {
+      setSafeZoneError('Geolocation not supported by your browser.')
+      return
+    }
+    setSafeZoneLoading(true)
+    setSafeZoneError('')
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const { latitude: lat, longitude: lng } = pos.coords
+          const res = await getSafeZone(lat, lng)
+          if (onRouteResult) onRouteResult({ ...res.data, _isSafeZone: true })
+        } catch (err) {
+          setSafeZoneError(err.response?.data?.detail || 'Could not find a safe zone nearby.')
+        } finally {
+          setSafeZoneLoading(false)
+        }
+      },
+      () => {
+        setSafeZoneError('Location access denied. Enable location to use SafeZone.')
+        setSafeZoneLoading(false)
+      },
+      { enableHighAccuracy: true, timeout: 8000 }
+    )
   }
 
   const level = result ? riskLevel(result.overall_risk) : null
@@ -157,6 +186,30 @@ export default function RoutePanel({ onRouteResult }) {
               Flood Risk: {level.charAt(0).toUpperCase() + level.slice(1)} ({result.overall_risk.toFixed(0)}/80)
             </p>
           </div>
+
+          {/* SafeZone button */}
+          {result.overall_risk >= 60 ? (
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={handleSafeZone}
+                disabled={safeZoneLoading}
+                className="w-full flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white font-bold py-2.5 px-4 rounded-xl shadow transition-colors"
+              >
+                {safeZoneLoading
+                  ? <Loader className="w-4 h-4 animate-spin" />
+                  : <ShieldAlert className="w-4 h-4" />}
+                {safeZoneLoading ? 'Finding nearest safe location...' : 'SafeZone — Route to Safety'}
+              </button>
+              {safeZoneError && (
+                <p className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{safeZoneError}</p>
+              )}
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5">
+              <ShieldAlert className="w-4 h-4 text-gray-400 shrink-0" />
+              <p className="text-xs text-gray-500">Area risk is low. SafeZone routing not required.</p>
+            </div>
+          )}
 
           {/* Flood warnings */}
           {result.flood_warnings.map((w, i) => (

@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, Literal
 
 
 class RouteRequest(BaseModel):
@@ -39,6 +39,29 @@ class AlternativeRoute(BaseModel):
     risk_level: str
     steps: list[NavStep] = []
     route_risk_points: list[RouteRiskPoint] = []
+
+
+class SafeZoneRequest(BaseModel):
+    lat: float
+    lng: float
+
+
+class SafePlace(BaseModel):
+    name: str
+    place_type: str
+    lat: float
+    lng: float
+    distance_km: float
+    vicinity: str
+
+
+class SafeZoneResponse(BaseModel):
+    safe_place: SafePlace
+    distance: str
+    duration: str
+    polyline: str
+    steps: list[NavStep]
+    message: str
 
 
 class RouteResponse(BaseModel):

@@ -76,6 +76,8 @@ export default function MapView({ routeData }) {
   const { t } = useLanguage()
   const [directions, setDirections] = useState(null)
   const [altPolyline, setAltPolyline] = useState(null)
+  const [safeZonePolyline, setSafeZonePolyline] = useState(null)
+  const [safeZonePlace, setSafeZonePlace] = useState(null)
   const [riskMarkers, setRiskMarkers] = useState([])
   const [selectedMarker, setSelectedMarker] = useState(null)
   const [loadingRisk, setLoadingRisk] = useState(false)
@@ -90,15 +92,32 @@ export default function MapView({ routeData }) {
     libraries: ['places'],
   })
 
-  // Draw primary route when routeData changes
+  // Draw route when routeData changes
   useEffect(() => {
     if (!routeData || !isLoaded) return
+
+    // SafeZone result: draw purple route from current location to safe place
+    if (routeData._isSafeZone) {
+      setDirections(null)
+      setAltPolyline(null)
+      setSafeZonePolyline(decodePolyline(routeData.polyline))
+      setSafeZonePlace(routeData.safe_place ?? null)
+      // Pan map to the safe place
+      if (mapRef.current && routeData.safe_place) {
+        mapRef.current.panTo({ lat: routeData.safe_place.lat, lng: routeData.safe_place.lng })
+        mapRef.current.setZoom(14)
+      }
+      return
+    }
+
+    // Normal route
+    setSafeZonePolyline(null)
+    setSafeZonePlace(null)
     const directionsService = new window.google.maps.DirectionsService()
     directionsService.route(
       { origin: routeData.origin, destination: routeData.destination, travelMode: window.google.maps.TravelMode.DRIVING },
       (result, status) => { if (status === 'OK') setDirections(result) }
     )
-    // Decode alternative route polyline if present
     setAltPolyline(routeData.alternative_route?.polyline
       ? decodePolyline(routeData.alternative_route.polyline)
       : null)
@@ -230,6 +249,37 @@ export default function MapView({ routeData }) {
               polylineOptions: { strokeColor: '#1a73e8', strokeWeight: 6, strokeOpacity: 0.9 },
               suppressMarkers: false,
             }}
+          />
+        )}
+
+        {/* SafeZone route — purple solid */}
+        {safeZonePolyline && (
+          <Polyline
+            path={safeZonePolyline}
+            options={{
+              strokeColor: '#7c3aed',
+              strokeWeight: 6,
+              strokeOpacity: 0.9,
+            }}
+          />
+        )}
+
+        {/* SafeZone destination marker */}
+        {safeZonePlace && (
+          <Marker
+            position={{ lat: safeZonePlace.lat, lng: safeZonePlace.lng }}
+            icon={{
+              url: 'http://maps.google.com/mapfiles/ms/icons/purple-dot.png',
+            }}
+            onClick={() => setSelectedMarker({
+              lat: safeZonePlace.lat,
+              lng: safeZonePlace.lng,
+              risk_score: 0,
+              risk_level: 'low',
+              recommendation: safeZonePlace.vicinity,
+              label: `${safeZonePlace.place_type}: ${safeZonePlace.name}`,
+              is_flood_zone: false,
+            })}
           />
         )}
 
