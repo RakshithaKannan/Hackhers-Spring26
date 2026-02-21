@@ -154,7 +154,7 @@ function HowItWorksSection() {
       n: '01',
       icon: <Activity className="w-7 h-7" />,
       title: 'Real-Time Tracking',
-      desc: 'Report live reading every 15 minutes - based on precipitation, rising levels, seasons, and flood prone zones.',
+      desc: 'Report live reading every 15 minutes based on precipitation, rising levels, seasons, and flood prone zones.',
     },
     {
       n: '02',
