@@ -154,31 +154,31 @@ function HowItWorksSection() {
       n: '01',
       icon: <Activity className="w-7 h-7" />,
       title: 'Real-Time Tracking',
-      desc: '8 USGS stream gauges across New Jersey report live readings every 15 minutes — gauge height, flood stage threshold, and rising rate.',
+      desc: 'Report live reading every 15 minutes - based on precipitation, rising levels, seasons, and flood prone zones.',
     },
     {
       n: '02',
       icon: <BarChart3 className="w-7 h-7" />,
       title: 'Machine Learning Prediction',
-      desc: 'Our gradient boosting model predicts flood risk 2–6 hours ahead with transparent scores from 0–80, weighted by stream gauge and NWS data.',
+      desc: 'Our gradient boosting model predicts flood risk 2–6 hours ahead with transparent scores from 0–80%, weighted by USGS and NWS data.',
     },
     {
       n: '03',
       icon: <Navigation className="w-7 h-7" />,
       title: 'Safe Routing',
-      desc: 'Every step of your route is risk-scored. When flood risk is High or Severe, a physically different safer alternative route is returned automatically.',
+      desc: 'Every step of your route is risk-scored. When flood risk is High or Severe, a safer alternative route is returned automatically.',
     },
     {
       n: '04',
       icon: <Users className="w-7 h-7" />,
       title: 'Community Reports',
-      desc: 'Real-time crowdsourced reports of flooded roads, closures, and hazards from other drivers in your area — safety through shared knowledge.',
+      desc: 'Real-time crowdsourced reports of flooded roads, closures, and hazards from other drivers in your area - safety through shared knowledge.',
     },
     {
       n: '05',
       icon: <MessageSquare className="w-7 h-7" />,
       title: 'AI Assistant',
-      desc: 'Powered by Gemini, our AI chatbot answers flood questions, gives safety advice, and interprets your current risk score in plain language.',
+      desc: 'Powered by Gemini, our AI chatbot answers flood questions, gives safety advice, and interprets your current risk score.',
     },
   ]
 
@@ -230,7 +230,7 @@ function StepCard({ s }) {
 function MiniStatsSection() {
   const items = [
     { value: '15 min', label: 'Update Interval' },
-    { value: '0–80',   label: 'Risk Score Range' },
+    { value: '0–80%',   label: 'Risk Score Range' },
     { value: '6 hr',   label: 'Forecast Window' },
   ]
   return (
