@@ -8,24 +8,28 @@
  */
 
 import { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useLanguage } from '../context/LanguageContext'
-import { Droplets } from 'lucide-react'
 
 export default function Navbar() {
   const { user, logout } = useAuth()
   const { t, lang, toggleLanguage } = useLanguage()
   const navigate = useNavigate()
+  const location = useLocation()
 
-  // Track whether the user has scrolled past the top
-  const [scrolled, setScrolled] = useState(false)
+  // Only the home page (/) gets the transparent-over-hero effect.
+  // All other pages (map, community, login, register) always show solid glass.
+  const isHome = location.pathname === '/'
+
+  const [scrolled, setScrolled] = useState(!isHome)
   useEffect(() => {
+    if (!isHome) { setScrolled(true); return }
     const onScroll = () => setScrolled(window.scrollY > 40)
     window.addEventListener('scroll', onScroll, { passive: true })
-    onScroll() // initialise on mount (handles hard reload mid-page)
+    onScroll()
     return () => window.removeEventListener('scroll', onScroll)
-  }, [])
+  }, [isHome])
 
   const handleLogout = () => {
     logout()
@@ -33,11 +37,9 @@ export default function Navbar() {
   }
 
   /* ── Dynamic class helpers ── */
-  const navBg    = scrolled ? 'bg-white/85 backdrop-blur-xl border-b border-slate-200/60 shadow-sm' : 'bg-transparent'
-  const linkCls  = scrolled ? 'text-slate-600 hover:text-sky-600' : 'text-white/80 hover:text-white'
-  const logoCls  = scrolled ? 'text-slate-900' : 'text-white'
-  const dropCls  = scrolled ? 'text-sky-600'   : 'text-sky-300'
-  const pillCls  = scrolled
+  const navBg   = scrolled ? 'bg-white/88 backdrop-blur-xl border-b border-slate-200/60 shadow-sm' : 'bg-transparent'
+  const linkCls = scrolled ? 'text-slate-600 hover:text-sky-600' : 'text-white/80 hover:text-white'
+  const pillCls = scrolled
     ? 'border-slate-300 text-slate-700 hover:bg-slate-100'
     : 'border-white/20 text-white hover:bg-white/10'
 
@@ -45,10 +47,15 @@ export default function Navbar() {
     <nav className={`sticky top-0 z-50 transition-all duration-300 ${navBg}`}>
       <div className="max-w-7xl mx-auto px-5 py-3.5 flex items-center justify-between">
 
-        {/* ── Logo ── */}
-        <Link to="/" className="flex items-center gap-2 font-bold text-xl">
-          <Droplets className={`w-6 h-6 transition-colors duration-300 ${dropCls}`} />
-          <span className={`transition-colors duration-300 ${logoCls}`}>WaterWise</span>
+        {/* ── Logo — real WaterWise image, white-filtered when transparent ── */}
+        <Link to="/" className="flex items-center">
+          <img
+            src="/logo.png"
+            alt="WaterWise"
+            className={`h-9 w-auto object-contain transition-all duration-300 ${
+              scrolled ? 'brightness-100' : 'brightness-0 invert'
+            }`}
+          />
         </Link>
 
         {/* ── Nav links (desktop) ── */}
@@ -82,9 +89,7 @@ export default function Navbar() {
 
           {user ? (
             <>
-              <span className={`text-sm hidden sm:block transition-colors duration-300 ${
-                scrolled ? 'text-slate-500' : 'text-white/70'
-              }`}>
+              <span className={`text-sm hidden sm:block transition-colors duration-300 ${scrolled ? 'text-slate-500' : 'text-white/70'}`}>
                 Hi, {user.username}
               </span>
               <button

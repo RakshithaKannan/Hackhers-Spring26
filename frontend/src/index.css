@@ -113,10 +113,14 @@
     animation-delay: -6s;
   }
 
-  /* ── Outline text for "AROUND" in Turn-Around section ── */
+  /* ── Outline text for "AROUND" — now ocean blue theme ── */
   .outline-text {
     color: transparent;
-    -webkit-text-stroke: 3px #f87171;
+    -webkit-text-stroke: 3px #f87171;   /* legacy red — kept in case used elsewhere */
+  }
+  .outline-text-blue {
+    color: transparent;
+    -webkit-text-stroke: 3px #38bdf8;   /* sky-400 — matches water theme */
   }
 
   /* ── Warning diagonal stripes background ── */
@@ -141,10 +145,11 @@
   }
 
   /* ── Hero entrance animations (fill-mode: both keeps initial opacity:0) ── */
-  .animate-badge      { animation: fadeIn  0.6s ease               0.10s both; }
-  .animate-hero-title { animation: fadeUp  0.9s cubic-bezier(0.16,1,0.3,1) 0.35s both; }
-  .animate-hero-sub   { animation: fadeUp  0.9s cubic-bezier(0.16,1,0.3,1) 0.72s both; }
-  .animate-hero-cta   { animation: fadeUp  0.9s cubic-bezier(0.16,1,0.3,1) 1.05s both; }
+  .animate-badge        { animation: fadeIn 0.6s ease                       0.10s both; }
+  .animate-hero-title   { animation: fadeUp 0.9s cubic-bezier(0.16,1,0.3,1) 0.35s both; }
+  .animate-hero-slogan  { animation: fadeUp 0.9s cubic-bezier(0.16,1,0.3,1) 0.62s both; }
+  .animate-hero-sub     { animation: fadeUp 0.9s cubic-bezier(0.16,1,0.3,1) 0.85s both; }
+  .animate-hero-cta     { animation: fadeUp 0.9s cubic-bezier(0.16,1,0.3,1) 1.10s both; }
 }
 
 /* ── Keyframes ────────────────────────────────────────────────────────────── */

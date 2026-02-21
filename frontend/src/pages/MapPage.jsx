@@ -20,7 +20,7 @@ export default function MapPage() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-57px)]">
+    <div className="flex h-[calc(100vh-60px)]">
       {/* Left panel */}
       <div className="w-80 shrink-0 bg-white border-r border-gray-200 overflow-y-auto p-4 flex flex-col gap-4">
         <h2 className="font-bold text-gray-800 text-sm uppercase tracking-wide">{t('get_safe_route')}</h2>
