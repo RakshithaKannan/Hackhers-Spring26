@@ -31,6 +31,16 @@ class RouteRiskPoint(BaseModel):
     label: str   # e.g. "Step 3: Turn left onto Main St"
 
 
+class AlternativeRoute(BaseModel):
+    distance: str
+    duration: str
+    polyline: str
+    overall_risk: float
+    risk_level: str
+    steps: list[NavStep] = []
+    route_risk_points: list[RouteRiskPoint] = []
+
+
 class RouteResponse(BaseModel):
     origin: str
     destination: str
@@ -39,6 +49,6 @@ class RouteResponse(BaseModel):
     polyline: str
     flood_warnings: list[FloodWarning]
     overall_risk: float
-    safe_alternative: Optional[str] = None
+    alternative_route: Optional[AlternativeRoute] = None
     steps: list[NavStep] = []
     route_risk_points: list[RouteRiskPoint] = []

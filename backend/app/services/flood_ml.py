@@ -9,13 +9,14 @@ WHY NOT ML:
 
 HOW THE SCORE IS COMPUTED (total: 0–80):
 
-  Factor 1 — Stream gauge height (0–30 pts)
-    Based on NJ USGS flood stage benchmarks:
-    < 4 ft  → 0 pts   (normal low flow)
-    4–7 ft  → 8 pts   (approaching elevated stage)
-    7–10 ft → 18 pts  (elevated, heightened risk)
-    10–14ft → 25 pts  (near flood stage)
-    ≥ 14 ft → 30 pts  (at or above flood stage)
+  Factor 1 — Stream gauge height vs flood stage (0–30 pts)
+    Scored as % of that river's official USGS flood stage, NOT arbitrary ft.
+    Each river has a different flood stage so this is apples-to-apples.
+    < 50% of flood stage  → 0 pts   (normal)
+    50–70%               → 6 pts   (elevated)
+    70–90%               → 16 pts  (approaching flood stage)
+    90–100%              → 24 pts  (near flood stage)
+    ≥ 100% of flood stage → 30 pts  (at or above flood stage — flooding now)
 
   Factor 2 — Gauge rising rate (0–20 pts)
     A rapidly rising gauge is the #1 flash flood indicator (NWS standard):
@@ -89,16 +90,25 @@ def is_flood_zone(lat: float, lng: float) -> bool:
     return False
 
 
-def _gauge_height_score(height_ft: float) -> float:
-    """Factor 1: stream gauge height (0–30 pts)."""
-    if height_ft >= 14:
+def _gauge_height_score(height_ft: float, flood_stage_ft: float) -> float:
+    """
+    Factor 1: gauge height as % of that river's official flood stage (0–30 pts).
+    Uses the real USGS flood stage for each specific gauge — not arbitrary thresholds.
+    Example: Raritan at New Brunswick flood stage = 16 ft.
+      Current reading 20.38 ft → 127% → 30 pts (above flood stage, critical)
+      Current reading 8 ft     →  50% →  0 pts (normal)
+    """
+    if flood_stage_ft <= 0:
+        flood_stage_ft = 12.0   # safe fallback
+    pct = height_ft / flood_stage_ft
+    if pct >= 1.0:
         return 30
-    elif height_ft >= 10:
-        return 25
-    elif height_ft >= 7:
-        return 18
-    elif height_ft >= 4:
-        return 8
+    elif pct >= 0.9:
+        return 24
+    elif pct >= 0.7:
+        return 16
+    elif pct >= 0.5:
+        return 6
     return 0
 
 
@@ -163,13 +173,14 @@ def compute_risk_score(
     precip_prob_6hr_pct: float,
     in_flood_zone: bool,
     month: int,
+    flood_stage_ft: float = 12.0,
 ) -> float:
     """
     Compute flood risk score (0–80). Every point is traceable to a real factor.
     See module docstring for full breakdown.
     """
     score = 0.0
-    score += _gauge_height_score(gauge_height_ft)
+    score += _gauge_height_score(gauge_height_ft, flood_stage_ft)
     score += _gauge_rate_score(gauge_rate_ft_per_hr)
     s1, s6 = _precip_score(precip_prob_1hr_pct, precip_prob_6hr_pct)
     score += s1 + s6
@@ -199,6 +210,7 @@ class FloodMLModel:
         precip_prob_6hr: float = 0.0,
         month: int = 6,
         hour: int = 12,
+        flood_stage_ft: float = 12.0,
     ) -> dict:
         in_zone = is_flood_zone(lat, lng)
         score = compute_risk_score(
@@ -208,6 +220,7 @@ class FloodMLModel:
             precip_prob_6hr_pct=precip_prob_6hr,
             in_flood_zone=in_zone,
             month=month,
+            flood_stage_ft=flood_stage_ft,
         )
         return {
             "risk_score": score,

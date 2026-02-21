@@ -166,6 +166,31 @@ export default function RoutePanel({ onRouteResult }) {
             </div>
           ))}
 
+          {/* Alternative safer route card */}
+          {result.alternative_route && (
+            <div className="border-2 border-green-400 rounded-xl overflow-hidden">
+              <div className="bg-green-500 px-4 py-2 flex items-center gap-2">
+                <Navigation className="w-4 h-4 text-white" />
+                <span className="text-white font-bold text-sm">Safer Alternative Route</span>
+                <span className="ml-auto text-green-100 text-xs">
+                  {result.alternative_route.risk_level.toUpperCase()} risk
+                </span>
+              </div>
+              <div className="bg-green-50 px-4 py-3 flex items-center justify-between">
+                <div className="text-sm text-green-800">
+                  <p className="font-semibold">{result.alternative_route.distance} · {result.alternative_route.duration}</p>
+                  <p className="text-xs text-green-600 mt-0.5">
+                    Risk score: {result.alternative_route.overall_risk.toFixed(0)}/80 vs {result.overall_risk.toFixed(0)}/80 on primary
+                  </p>
+                </div>
+                <CheckCircle className="w-6 h-6 text-green-500 shrink-0" />
+              </div>
+              <div className="px-4 py-2 bg-white text-xs text-gray-500">
+                Shown in green on the map
+              </div>
+            </div>
+          )}
+
           {/* Turn-by-turn directions — always shown, Google Maps style */}
           {result.steps?.length > 0 && (
             <div className="border border-gray-200 rounded-xl overflow-hidden">

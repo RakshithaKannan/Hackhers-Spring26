@@ -29,6 +29,7 @@ async def get_flood_risk(body: FloodRiskRequest):
         precip_prob_6hr=precip_data["precip_prob_6hr_pct"],
         month=now.month,
         hour=now.hour,
+        flood_stage_ft=gauge_data["flood_stage_ft"],
     )
 
     sources = ["Rule-based risk scorer", "USGS Water Services"]
