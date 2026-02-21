@@ -209,12 +209,11 @@ async def get_safe_route(body: RouteRequest):
         primary["raw_steps"], dest_lat, dest_lng, now.month, now.hour, primary_nav
     )
 
-    # If primary route has any Moderate or higher risk, find the best alternative.
-    # "Best" = fewest high-risk points (>40) along the path, then lowest overall score.
-    # We always return an alternative when risk >= 21 so the user has a choice,
-    # even if the alternative scores the same (it's a physically different path).
+    # Only suggest an alternative when primary risk is High or Severe (>= 60/80).
+    # The alternative must genuinely score lower — no alternative shown if all
+    # routes score the same (e.g. all cross the same flooded basin).
     alternative_route = None
-    if primary_overall >= 21 and len(all_candidates) > 1:
+    if primary_overall >= 60 and len(all_candidates) > 1:
         def _alt_score_key(result_tuple):
             pts, _, overall = result_tuple
             high_count = sum(1 for p in pts if p.risk_score > 40)
@@ -235,7 +234,7 @@ async def get_safe_route(body: RouteRequest):
                 candidate["raw_steps"], dest_lat, dest_lng, now.month, now.hour, cand_nav
             )
             cand_key = _alt_score_key((cand_pts, None, cand_overall))
-            if cand_key <= best_key:
+            if cand_key < best_key:
                 best_key         = cand_key
                 best_alt         = candidate
                 best_alt_nav     = cand_nav
