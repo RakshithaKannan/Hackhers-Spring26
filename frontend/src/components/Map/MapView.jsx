@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
-import { GoogleMap, useJsApiLoader, Marker, DirectionsRenderer, InfoWindow } from '@react-google-maps/api'
+import { GoogleMap, useJsApiLoader, Marker, DirectionsRenderer, InfoWindow, Polyline } from '@react-google-maps/api'
 import { getFloodRisk } from '../../services/api'
 import { useLanguage } from '../../context/LanguageContext'
 import { ArrowLeft, ArrowRight, ArrowUp, RotateCcw, Navigation, X } from 'lucide-react'
@@ -26,6 +26,22 @@ function riskLevel(score) {
   if (score <= 40) return 'moderate'
   if (score <= 60) return 'high'
   return 'severe'
+}
+
+/** Decode a Google Maps encoded polyline into [{lat, lng}] array */
+function decodePolyline(encoded) {
+  const points = []
+  let index = 0, lat = 0, lng = 0
+  while (index < encoded.length) {
+    for (const isLng of [false, true]) {
+      let shift = 0, result = 0, b
+      do { b = encoded.charCodeAt(index++) - 63; result |= (b & 0x1f) << shift; shift += 5 } while (b >= 0x20)
+      const delta = result & 1 ? ~(result >> 1) : result >> 1
+      isLng ? (lng += delta) : (lat += delta)
+    }
+    points.push({ lat: lat / 1e5, lng: lng / 1e5 })
+  }
+  return points
 }
 
 function haversineMeters(lat1, lng1, lat2, lng2) {
@@ -59,6 +75,9 @@ function maneuverArrow(maneuver, size = 'w-10 h-10') {
 export default function MapView({ routeData }) {
   const { t } = useLanguage()
   const [directions, setDirections] = useState(null)
+  const [altPolyline, setAltPolyline] = useState(null)
+  const [safeZonePolyline, setSafeZonePolyline] = useState(null)
+  const [safeZonePlace, setSafeZonePlace] = useState(null)
   const [riskMarkers, setRiskMarkers] = useState([])
   const [selectedMarker, setSelectedMarker] = useState(null)
   const [loadingRisk, setLoadingRisk] = useState(false)
@@ -76,11 +95,32 @@ export default function MapView({ routeData }) {
   // Draw route when routeData changes
   useEffect(() => {
     if (!routeData || !isLoaded) return
+
+    // SafeZone result: draw purple route from current location to safe place
+    if (routeData._isSafeZone) {
+      setDirections(null)
+      setAltPolyline(null)
+      setSafeZonePolyline(decodePolyline(routeData.polyline))
+      setSafeZonePlace(routeData.safe_place ?? null)
+      // Pan map to the safe place
+      if (mapRef.current && routeData.safe_place) {
+        mapRef.current.panTo({ lat: routeData.safe_place.lat, lng: routeData.safe_place.lng })
+        mapRef.current.setZoom(14)
+      }
+      return
+    }
+
+    // Normal route
+    setSafeZonePolyline(null)
+    setSafeZonePlace(null)
     const directionsService = new window.google.maps.DirectionsService()
     directionsService.route(
       { origin: routeData.origin, destination: routeData.destination, travelMode: window.google.maps.TravelMode.DRIVING },
       (result, status) => { if (status === 'OK') setDirections(result) }
     )
+    setAltPolyline(routeData.alternative_route?.polyline
+      ? decodePolyline(routeData.alternative_route.polyline)
+      : null)
     setCurrentStepIdx(0)
     setIsNavigating(false)
     stopNavigation()
@@ -201,13 +241,61 @@ export default function MapView({ routeData }) {
         onClick={handleMapClick}
         onLoad={(map) => { mapRef.current = map }}
       >
-        {/* Route polyline */}
+        {/* Primary route — blue */}
         {directions && (
           <DirectionsRenderer
             directions={directions}
             options={{
               polylineOptions: { strokeColor: '#1a73e8', strokeWeight: 6, strokeOpacity: 0.9 },
               suppressMarkers: false,
+            }}
+          />
+        )}
+
+        {/* SafeZone route — purple solid */}
+        {safeZonePolyline && (
+          <Polyline
+            path={safeZonePolyline}
+            options={{
+              strokeColor: '#7c3aed',
+              strokeWeight: 6,
+              strokeOpacity: 0.9,
+            }}
+          />
+        )}
+
+        {/* SafeZone destination marker */}
+        {safeZonePlace && (
+          <Marker
+            position={{ lat: safeZonePlace.lat, lng: safeZonePlace.lng }}
+            icon={{
+              url: 'http://maps.google.com/mapfiles/ms/icons/purple-dot.png',
+            }}
+            onClick={() => setSelectedMarker({
+              lat: safeZonePlace.lat,
+              lng: safeZonePlace.lng,
+              risk_score: 0,
+              risk_level: 'low',
+              recommendation: safeZonePlace.vicinity,
+              label: `${safeZonePlace.place_type}: ${safeZonePlace.name}`,
+              is_flood_zone: false,
+            })}
+          />
+        )}
+
+        {/* Alternative safer route — green dashed */}
+        {altPolyline && (
+          <Polyline
+            path={altPolyline}
+            options={{
+              strokeColor: '#34a853',
+              strokeWeight: 5,
+              strokeOpacity: 0.85,
+              icons: [{
+                icon: { path: 'M 0,-1 0,1', strokeOpacity: 1, scale: 4 },
+                offset: '0',
+                repeat: '20px',
+              }],
             }}
           />
         )}

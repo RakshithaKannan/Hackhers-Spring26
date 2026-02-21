@@ -23,6 +23,9 @@ export const getFloodRisk = (lat, lng) =>
 export const getRoute = (origin, destination) =>
   api.post('/navigation/route', { origin, destination, avoid_flood: true })
 
+export const getSafeZone = (lat, lng) =>
+  api.post('/navigation/safezone', { lat, lng })
+
 // Chat
 export const sendChatMessage = (message, riskScore, riskLevel, location, history) =>
   api.post('/chat/message', {

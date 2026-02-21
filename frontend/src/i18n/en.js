@@ -8,16 +8,16 @@ export default {
   logout: 'Logout',
 
   // Home
-  hero_title: 'Navigate Safely Through Floods',
-  hero_subtitle: 'Real-time flood risk prediction for New Jersey roads, powered by ML and live sensor data.',
+  hero_title: 'WaterWise',
+  hero_subtitle: 'Real-time flood risk intelligence and safe routing for New Jersey drivers.',
   get_safe_route: 'Get Safe Route',
   how_it_works: 'How It Works',
   step1_title: 'Live Sensor Data',
-  step1_desc: 'We pull real-time data from USGS stream gauges and National Weather Service forecasts.',
-  step2_title: 'ML Prediction',
-  step2_desc: 'Our gradient boosting model predicts flood risk 2-6 hours ahead with scores from 0-80.',
+  step1_desc: '8 USGS stream gauges across NJ report live readings every 15 minutes — gauge height, flood stage, and rising rate.',
+  step2_title: 'Transparent Risk Scoring',
+  step2_desc: 'Rule-based model scores 0–80. Every point is traceable to a real factor — no black-box ML.',
   step3_title: 'Safe Routing',
-  step3_desc: 'Get turn-by-turn directions that avoid flood-prone areas and warn you of risks ahead.',
+  step3_desc: 'Risk checked at every step of your route. A flooded bridge mid-route gets caught before you reach it.',
 
   // Map
   from_placeholder: 'From (e.g. Newark, NJ)',
@@ -34,7 +34,7 @@ export default {
 
   // Chat
   chat_placeholder: 'Say something (e.g. "I see water ahead")',
-  chat_title: 'SafeSphere AI',
+  chat_title: 'WaterWise AI',
   send: 'Send',
 
   // Community

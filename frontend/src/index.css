@@ -2,30 +2,174 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Base reset ───────────────────────────────────────────────────────────── */
 @layer base {
+  html { scroll-behavior: smooth; }
+
   body {
-    @apply bg-gray-50 text-gray-900 font-sans;
+    @apply bg-white text-gray-900;
+    font-family: 'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
 
+/* ── Component utilities ──────────────────────────────────────────────────── */
 @layer components {
+
+  /* ── Existing classes kept for full app compatibility ── */
   .btn-primary {
-    @apply bg-primary text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply bg-sky-600 text-white px-4 py-2 rounded-lg font-semibold
+           hover:bg-sky-700 transition-colors
+           disabled:opacity-50 disabled:cursor-not-allowed;
   }
-  .btn-danger {
-    @apply bg-danger text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700 transition-colors;
-  }
-  .btn-outline {
-    @apply border border-gray-300 text-gray-700 px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-colors;
-  }
-  .card {
-    @apply bg-white rounded-xl shadow-sm border border-gray-200 p-4;
-  }
-  .input {
-    @apply w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent;
-  }
-  .risk-low    { @apply text-green-700 bg-green-100; }
+  .btn-danger  { @apply bg-red-600   text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700   transition-colors; }
+  .btn-outline { @apply border border-gray-300 text-gray-700 px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-colors; }
+  .card        { @apply bg-white rounded-xl shadow-sm border border-gray-200 p-4; }
+  .input       { @apply w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent; }
+  .risk-low      { @apply text-green-700  bg-green-100; }
   .risk-moderate { @apply text-yellow-700 bg-yellow-100; }
-  .risk-high   { @apply text-orange-700 bg-orange-100; }
-  .risk-critical { @apply text-red-700 bg-red-100; }
+  .risk-high     { @apply text-orange-700 bg-orange-100; }
+  .risk-critical { @apply text-red-700    bg-red-100; }
+
+  /* ── Glass morphism ── */
+  .glass {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+  }
+  .glass-dark {
+    background: rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+  }
+
+  /* ── Animated gradient text (WaterWise title + headings) ── */
+  .gradient-text {
+    background: linear-gradient(
+      135deg,
+      #7dd3fc 0%,
+      #38bdf8 25%,
+      #a5f3fc 55%,
+      #67e8f9 80%,
+      #7dd3fc 100%
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: shimmer 4s linear infinite;
+  }
+
+  /* ── Soft glow on the main title ── */
+  .text-glow {
+    filter: drop-shadow(0 0 40px rgba(56, 189, 248, 0.45));
+  }
+
+  /* ── Animated water gradient background ── */
+  .water-bg {
+    background: linear-gradient(
+      -45deg,
+      #0f172a,
+      #0c4a6e,
+      #0369a1,
+      #0284c7,
+      #0ea5e9,
+      #164e63,
+      #0f172a
+    );
+    background-size: 400% 400%;
+    animation: waterGradient 14s ease infinite;
+  }
+
+  /* ── Floating ambient orbs in hero ── */
+  .orb {
+    position: absolute;
+    border-radius: 9999px;
+    filter: blur(80px);
+    pointer-events: none;
+  }
+  .orb-1 {
+    width: 24rem; height: 24rem;
+    top: 4rem; left: 2rem;
+    background: rgba(56, 189, 248, 0.18);
+    animation: floatOrb 9s ease-in-out infinite;
+  }
+  .orb-2 {
+    width: 32rem; height: 32rem;
+    bottom: 4rem; right: 2rem;
+    background: rgba(34, 211, 238, 0.12);
+    animation: floatOrb 11s ease-in-out infinite reverse;
+    animation-delay: -3s;
+  }
+  .orb-3 {
+    width: 48rem; height: 48rem;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(14, 165, 233, 0.08);
+    animation: floatOrb 13s ease-in-out infinite;
+    animation-delay: -6s;
+  }
+
+  /* ── Outline text for "AROUND" in Turn-Around section ── */
+  .outline-text {
+    color: transparent;
+    -webkit-text-stroke: 3px #f87171;
+  }
+
+  /* ── Warning diagonal stripes background ── */
+  .warning-stripes {
+    background: repeating-linear-gradient(
+      -45deg,
+      rgba(245, 158, 11, 0.055) 0px,
+      rgba(245, 158, 11, 0.055) 10px,
+      transparent 10px,
+      transparent 28px
+    );
+  }
+
+  /* ── Apple-style card hover pop ── */
+  .card-pop {
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+                box-shadow 0.35s ease;
+  }
+  .card-pop:hover {
+    transform: translateY(-7px) scale(1.015);
+    box-shadow: 0 28px 64px rgba(0, 0, 0, 0.10);
+  }
+
+  /* ── Hero entrance animations (fill-mode: both keeps initial opacity:0) ── */
+  .animate-badge      { animation: fadeIn  0.6s ease               0.10s both; }
+  .animate-hero-title { animation: fadeUp  0.9s cubic-bezier(0.16,1,0.3,1) 0.35s both; }
+  .animate-hero-sub   { animation: fadeUp  0.9s cubic-bezier(0.16,1,0.3,1) 0.72s both; }
+  .animate-hero-cta   { animation: fadeUp  0.9s cubic-bezier(0.16,1,0.3,1) 1.05s both; }
+}
+
+/* ── Keyframes ────────────────────────────────────────────────────────────── */
+@keyframes waterGradient {
+  0%, 100% { background-position: 0% 50%; }
+  50%       { background-position: 100% 50%; }
+}
+
+@keyframes shimmer {
+  0%   { background-position: 0% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes floatOrb {
+  0%, 100% { transform: translateY(0px) scale(1); }
+  40%       { transform: translateY(-22px) scale(1.04); }
+  70%       { transform: translateY(10px) scale(0.97); }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(36px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
