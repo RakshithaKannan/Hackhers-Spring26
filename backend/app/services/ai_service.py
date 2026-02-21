@@ -34,7 +34,7 @@ async def get_ai_response(
     risk_score: float = 0.0,
     risk_level: str = "unknown",
     location: str = "your location",
-    conversation_history: list[dict] | None = None,
+    conversation_history: list = None,
 ) -> str:
     context_message = (
         f"[SYSTEM CONTEXT: Current ML flood risk at {location} — "
