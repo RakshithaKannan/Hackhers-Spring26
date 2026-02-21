@@ -12,9 +12,9 @@ export default function MapPage() {
   const handleRouteResult = (data) => {
     setRouteData(data)
     if (data.overall_risk > 0) {
-      const level = data.overall_risk < 15 ? 'low'
-        : data.overall_risk < 35 ? 'moderate'
-        : data.overall_risk < 55 ? 'high' : 'critical'
+      const level = data.overall_risk <= 20 ? 'low'
+        : data.overall_risk <= 40 ? 'moderate'
+        : data.overall_risk <= 60 ? 'high' : 'severe'
       setCurrentRisk({ score: data.overall_risk, level })
     }
   }

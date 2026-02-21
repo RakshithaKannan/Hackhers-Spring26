@@ -28,7 +28,7 @@ export default {
   risk_low: 'Low',
   risk_moderate: 'Moderate',
   risk_high: 'High',
-  risk_critical: 'CRITICAL',
+  risk_severe: 'Severe',
   loading: 'Loading...',
   no_api_key: 'Google Maps API key not set',
 
