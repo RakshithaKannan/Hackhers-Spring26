@@ -14,6 +14,23 @@ class FloodWarning(BaseModel):
     message: str
 
 
+class NavStep(BaseModel):
+    instruction: str
+    distance: str
+    duration: str
+    maneuver: Optional[str] = None
+    start_lat: float
+    start_lng: float
+
+
+class RouteRiskPoint(BaseModel):
+    lat: float
+    lng: float
+    risk_score: float
+    risk_level: str
+    label: str   # e.g. "Step 3: Turn left onto Main St"
+
+
 class RouteResponse(BaseModel):
     origin: str
     destination: str
@@ -23,3 +40,5 @@ class RouteResponse(BaseModel):
     flood_warnings: list[FloodWarning]
     overall_risk: float
     safe_alternative: Optional[str] = None
+    steps: list[NavStep] = []
+    route_risk_points: list[RouteRiskPoint] = []
