@@ -39,7 +39,7 @@ export default function Navbar() {
         {/* ── Logo — real WaterWise image, white-filtered when transparent ── */}
         <Link to="/" className="flex items-center">
           <img
-            src="/logo.png"
+            src="/logo.svg"
             alt="WaterWise"
             className={`h-9 w-auto object-contain transition-all duration-300 ${
               scrolled ? 'brightness-100' : 'brightness-0 invert'

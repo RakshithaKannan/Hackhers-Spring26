@@ -43,7 +43,6 @@ export default function Home() {
       <MiniStatsSection />
       <TurnAroundSection />
       <CommunitySection />
-      <FooterCta />
     </div>
   )
 }
@@ -114,14 +113,14 @@ function HowItWorksSection() {
       icon: <Activity className="w-6 h-6" />,
       accent: 'text-sky-600 bg-sky-50',
       title: 'Real-Time Tracking',
-      desc: 'Reports live readings every 15 minutes — based on precipitation, rising water levels, seasons, and flood-prone zones.',
+      desc: 'Reports live readings every 15 minutes based on precipitation, rising water levels, seasons, and flood-prone zones.',
     },
     {
       n: '02',
       icon: <BarChart3 className="w-6 h-6" />,
       accent: 'text-violet-600 bg-violet-50',
       title: 'Machine Learning Prediction',
-      desc: 'Our gradient boosting model predicts flood risk 2–6 hours ahead with transparent scores from 0–80, weighted by USGS and NWS data.',
+      desc: 'Our gradient boosting model predicts flood risk 2–6 hours ahead with transparent scores from 0–80%, weighted by USGS and NWS data.',
     },
     {
       n: '03',
@@ -140,7 +139,7 @@ function HowItWorksSection() {
     {
       n: '05',
       icon: <MessageSquare className="w-6 h-6" />,
-      accent: 'text-indigo-600 bg-indigo-50',
+      accent: 'text-red-600 bg-red-50',
       title: 'AI Assistant',
       desc: 'Powered by Gemini, our AI chatbot answers flood questions, gives safety advice, and interprets your current risk score.',
     },
@@ -198,7 +197,7 @@ function StepCard({ s }) {
 function MiniStatsSection() {
   const items = [
     { value: '15 min', label: 'Update Interval' },
-    { value: '0–80',   label: 'Risk Score Range' },
+    { value: '0–80%',    label: 'Risk Score Range' },
     { value: '6 hr',   label: 'Forecast Window' },
   ]
   return (
@@ -231,7 +230,7 @@ function TurnAroundSection() {
       <div ref={ref} className="relative z-10 max-w-3xl mx-auto flex flex-col md:flex-row items-center justify-center gap-6 md:gap-12">
 
         {/* Left: stacked text */}
-        <div className="text-center md:text-left select-none shrink-0">
+        <div className="text-center select-none shrink-0">
           <p
             className={`font-black text-white tracking-tighter leading-none
               transition-[opacity,transform] duration-600 ${visible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'}`}
@@ -259,7 +258,7 @@ function TurnAroundSection() {
         <div className="hidden md:block w-px h-24 bg-sky-700/40 shrink-0" />
 
         {/* Right: supporting text + icon */}
-        <div className={`text-center md:text-left transition-[opacity,transform] duration-600 delay-300 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+        <div className={`text-center transition-[opacity,transform] duration-600 delay-300 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
           <AlertTriangle className="w-8 h-8 text-sky-400 mb-3 mx-auto md:mx-0"
             style={{ filter: 'drop-shadow(0 0 10px rgba(56,189,248,0.5))' }} />
           <p className="text-sky-100 text-base font-semibold mb-1">Never drive through flooded roads.</p>
@@ -297,28 +296,3 @@ function CommunitySection() {
   )
 }
 
-/* ── 6. FOOTER CTA ───────────────────────────────────────────────────────── */
-function FooterCta() {
-  return (
-    <section className="relative py-32 px-6 water-bg overflow-hidden">
-      <div className="orb orb-1" style={{ opacity: 0.13 }} />
-      <div className="orb orb-2" style={{ opacity: 0.09 }} />
-      <Reveal className="relative z-10 text-center max-w-3xl mx-auto">
-        <img src="/logo.png" alt="WaterWise" className="h-16 mx-auto mb-8 opacity-90 drop-shadow-lg" />
-        <h2 className="text-4xl md:text-5xl font-black text-white mb-3">
-          Stay Safe.{' '}
-          <span className="gradient-text">Stay WaterWise.</span>
-        </h2>
-        <p className="text-sky-200/75 text-lg mb-10 max-w-xl mx-auto leading-relaxed">
-          Free. No app download. No login required to check flood risk.
-        </p>
-        <Link
-          to="/map"
-          className="inline-flex items-center gap-2 bg-sky-500 hover:bg-sky-400 text-white font-bold px-10 py-4 rounded-2xl text-lg shadow-lg shadow-sky-500/30 transition-all duration-300 hover:scale-[1.03]"
-        >
-          Open Live Map <ArrowRight className="w-5 h-5" />
-        </Link>
-      </Reveal>
-    </section>
-  )
-}
