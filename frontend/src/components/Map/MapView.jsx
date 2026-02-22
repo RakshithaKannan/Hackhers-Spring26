@@ -216,7 +216,7 @@ export default function MapView({ routeData }) {
           {/* Next maneuver preview */}
           {nextStep && (
             <div className="bg-blue-900 flex items-center gap-3 px-5 py-2">
-              <span className="text-blue-300 text-xs font-medium uppercase tracking-wide">Then</span>
+              <span className="text-blue-300 text-xs font-medium uppercase tracking-wide">{t('then')}</span>
               <div className="shrink-0">{maneuverArrow(nextStep.maneuver, 'w-4 h-4')}</div>
               <p className="text-blue-100 text-sm truncate flex-1">{nextStep.instruction}</p>
               <span className="text-blue-300 text-xs shrink-0">{nextStep.distance}</span>
@@ -226,7 +226,7 @@ export default function MapView({ routeData }) {
           {/* Arrived banner */}
           {isLastStep && (
             <div className="bg-green-600 text-white text-center text-sm font-semibold py-2">
-              Arriving at destination
+              {t('arriving_destination')}
             </div>
           )}
         </div>
@@ -346,7 +346,7 @@ export default function MapView({ routeData }) {
                 <p className="font-semibold text-gray-700 mb-1 text-xs">{selectedMarker.label}</p>
               )}
               <p className="font-bold text-gray-800 mb-1">
-                {t('flood_risk')}: {selectedMarker.risk_score}/80
+                {t('flood_risk')}: {Math.round(selectedMarker.risk_score / 80 * 100)}%
                 <span className="ml-1 capitalize text-gray-500">({selectedMarker.risk_level})</span>
               </p>
               <p className="text-gray-600">{selectedMarker.recommendation}</p>
@@ -365,20 +365,20 @@ export default function MapView({ routeData }) {
           className="absolute bottom-14 right-4 bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-full shadow-lg font-semibold text-sm flex items-center gap-2 z-10"
         >
           <Navigation className="w-4 h-4" />
-          Start Navigation
+          {t('start_navigation')}
         </button>
       )}
 
       {/* Hint text */}
       {!isNavigating && (
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white/90 text-gray-600 text-xs px-3 py-1.5 rounded-full shadow pointer-events-none z-10">
-          {routeData ? 'Route loaded — tap Start Navigation' : 'Click anywhere to check flood risk'}
+          {routeData ? t('route_loaded_hint') : t('click_risk_hint')}
         </div>
       )}
 
       {loadingRisk && (
         <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-white/90 text-blue-700 text-xs px-3 py-1.5 rounded-full shadow z-10">
-          Analyzing risk...
+          {t('analyzing_risk')}
         </div>
       )}
     </div>

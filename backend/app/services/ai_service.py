@@ -17,7 +17,7 @@ MODELS = [
     "gemini-2.0-flash-lite",
 ]
 
-SYSTEM_PROMPT = """You are SafeSphere AI, an emergency flood safety assistant for New Jersey drivers.
+SYSTEM_PROMPT = """You are WaterWise AI, an emergency flood safety assistant for New Jersey drivers.
 Your job is to help users navigate safely during flood events.
 
 You have access to real-time flood risk data. When the user reports what they see (e.g., "I see water ahead"),
@@ -54,9 +54,10 @@ async def get_ai_response(
     location: str = "your location",
     conversation_history: list = None,
 ) -> str:
+    risk_pct = round(risk_score / 80 * 100)
     context_message = (
         f"[SYSTEM CONTEXT: Current ML flood risk at {location} — "
-        f"Score: {risk_score}/80, Level: {risk_level.upper()}]"
+        f"Score: {risk_pct}%, Level: {risk_level.upper()}]"
     )
 
     history = []

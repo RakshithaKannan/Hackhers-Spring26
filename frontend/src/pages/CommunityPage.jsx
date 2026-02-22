@@ -42,7 +42,7 @@ export default function CommunityPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen" style={{ background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #f0fdf4 100%)' }}>
       <div className="max-w-6xl mx-auto px-4 py-10">
 
         {/* ── Page header ── */}
@@ -98,18 +98,20 @@ export default function CommunityPage() {
         )}
 
         {/* ── Board outer frame ── */}
-        <div className="rounded-2xl border border-sky-200 bg-white shadow-sm overflow-hidden">
+        <div className="rounded-2xl overflow-hidden shadow-lg" style={{ border: '2px solid #bae6fd' }}>
 
           {/* Board header strip */}
-          <div className="bg-gradient-to-r from-sky-500 to-cyan-500 px-6 py-3 flex items-center justify-between">
+          <div className="px-6 py-3 flex items-center justify-between" style={{ background: 'linear-gradient(90deg, #0284c7, #0ea5e9, #06b6d4)' }}>
             <span className="text-white text-xs font-black uppercase tracking-widest">
               ⚠️ &nbsp;{t('active_alerts_label')}&nbsp; ⚠️
             </span>
-            <span className="text-white/70 text-xs">{posts.length} {posts.length === 1 ? 'report' : 'reports'}</span>
+            <span className="text-white/80 text-xs font-semibold">
+              {posts.length} {posts.length === 1 ? t('report') : t('reports')}
+            </span>
           </div>
 
           {/* Board surface */}
-          <div className="p-6 min-h-[420px] bg-white">
+          <div className="p-6 min-h-[420px]" style={{ background: 'linear-gradient(160deg, #f0f9ff 0%, #ffffff 60%, #f0fdf4 100%)' }}>
             {loading && (
               <div className="flex justify-center py-20 text-sky-400">
                 <Loader className="w-8 h-8 animate-spin" />

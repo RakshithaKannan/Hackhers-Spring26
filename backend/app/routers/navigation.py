@@ -1,7 +1,7 @@
 import re
 import asyncio
 import httpx
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from datetime import datetime
 
 import math
@@ -309,6 +309,32 @@ async def _search_places(lat: float, lng: float, place_type: str) -> list[dict]:
         return []
 
 
+_LATLNG_RE = re.compile(r"^(-?\d+\.?\d*),\s*(-?\d+\.?\d*)$")
+
+
+@router.get("/autocomplete")
+async def autocomplete_location(input: str = Query(..., min_length=2)):
+    """Proxy Google Places Autocomplete — returns up to 5 address suggestions."""
+    if not settings.GOOGLE_MAPS_API_KEY:
+        return []
+    params = {
+        "input":      input,
+        "types":      "geocode|establishment",
+        "components": "country:us",
+        "key":        settings.GOOGLE_MAPS_API_KEY,
+    }
+    try:
+        async with httpx.AsyncClient(timeout=5.0) as client:
+            resp = await client.get(
+                "https://maps.googleapis.com/maps/api/place/autocomplete/json",
+                params=params,
+            )
+        predictions = resp.json().get("predictions", [])
+        return [{"description": p["description"]} for p in predictions[:5]]
+    except Exception:
+        return []
+
+
 async def _search_places_keyword(lat: float, lng: float, keyword: str) -> list[dict]:
     """Search Google Places Nearby using a keyword (e.g. 'emergency shelter')."""
     params = {
@@ -362,11 +388,16 @@ async def get_safezone(body: SafeZoneRequest):
     if not settings.GOOGLE_MAPS_API_KEY:
         raise HTTPException(status_code=503, detail="Google Maps API key not configured")
 
-    # Geocode the user's text address
-    try:
-        user_lat, user_lng = await _geocode(body.location)
-    except HTTPException:
-        raise HTTPException(status_code=400, detail=f"Could not find location: {body.location}")
+    # Accept either "lat,lng" coordinates or a plain text address
+    latlng_match = _LATLNG_RE.match(body.location.strip())
+    if latlng_match:
+        user_lat = float(latlng_match.group(1))
+        user_lng = float(latlng_match.group(2))
+    else:
+        try:
+            user_lat, user_lng = await _geocode(body.location)
+        except HTTPException:
+            raise HTTPException(status_code=400, detail=f"Could not find location: {body.location}")
 
     # Resolve a display address for the geocoded point
     async with httpx.AsyncClient(timeout=8.0) as hclient:

@@ -23,6 +23,9 @@ export const getFloodRisk = (lat, lng) =>
 export const getRoute = (origin, destination) =>
   api.post('/navigation/route', { origin, destination, avoid_flood: true })
 
+export const getAutocomplete = (input) =>
+  api.get('/navigation/autocomplete', { params: { input } })
+
 export const getSafeZone = (location) =>
   api.post('/navigation/safezone', { location })
 

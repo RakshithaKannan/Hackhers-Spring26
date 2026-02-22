@@ -69,7 +69,7 @@ export default function RoutePanel({ onRouteResult }) {
 
   const handleSafeZone = () => {
     if (!navigator.geolocation) {
-      setSafeZoneError('Geolocation not supported by your browser.')
+      setSafeZoneError(t('geolocation_unsupported'))
       return
     }
     setSafeZoneLoading(true)
@@ -78,7 +78,7 @@ export default function RoutePanel({ onRouteResult }) {
       async (pos) => {
         try {
           const { latitude: lat, longitude: lng } = pos.coords
-          const res = await getSafeZone(lat, lng)
+          const res = await getSafeZone(`${lat},${lng}`)
           if (onRouteResult) onRouteResult({ ...res.data, _isSafeZone: true })
         } catch (err) {
           setSafeZoneError(err.response?.data?.detail || 'Could not find a safe zone nearby.')
@@ -87,7 +87,7 @@ export default function RoutePanel({ onRouteResult }) {
         }
       },
       () => {
-        setSafeZoneError('Location access denied. Enable location to use SafeZone.')
+        setSafeZoneError(t('location_denied'))
         setSafeZoneLoading(false)
       },
       { enableHighAccuracy: true, timeout: 8000 }
@@ -183,7 +183,7 @@ export default function RoutePanel({ onRouteResult }) {
               ? <CheckCircle className="w-4 h-4 mt-0.5 shrink-0" />
               : <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />}
             <p className="text-sm font-semibold">
-              Flood Risk: {level.charAt(0).toUpperCase() + level.slice(1)} ({result.overall_risk.toFixed(0)}/80)
+              {t('flood_risk_label')}: {t(`risk_${level}`)} ({Math.round(result.overall_risk / 80 * 100)}%)
             </p>
           </div>
 
@@ -198,7 +198,7 @@ export default function RoutePanel({ onRouteResult }) {
                 {safeZoneLoading
                   ? <Loader className="w-4 h-4 animate-spin" />
                   : <ShieldAlert className="w-4 h-4" />}
-                {safeZoneLoading ? 'Finding nearest safe location...' : 'SafeZone — Route to Safety'}
+                {safeZoneLoading ? t('safezone_finding') : t('safezone_route_btn')}
               </button>
               {safeZoneError && (
                 <p className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{safeZoneError}</p>
@@ -207,14 +207,14 @@ export default function RoutePanel({ onRouteResult }) {
           ) : (
             <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5">
               <ShieldAlert className="w-4 h-4 text-gray-400 shrink-0" />
-              <p className="text-xs text-gray-500">Area risk is low. SafeZone routing not required.</p>
+              <p className="text-xs text-gray-500">{t('safezone_low_risk')}</p>
             </div>
           )}
 
           {/* Flood warnings */}
           {result.flood_warnings.map((w, i) => (
             <div key={i} className={`border rounded-lg p-3 text-sm ${RISK_COLORS[riskLevel(w.risk_score)]}`}>
-              <p className="font-semibold">{w.location} — {w.risk_score.toFixed(0)}/80</p>
+              <p className="font-semibold">{w.location} — {Math.round(w.risk_score / 80 * 100)}%</p>
               <p className="mt-0.5">{w.message}</p>
             </div>
           ))}
@@ -224,22 +224,22 @@ export default function RoutePanel({ onRouteResult }) {
             <div className="border-2 border-green-400 rounded-xl overflow-hidden">
               <div className="bg-green-500 px-4 py-2 flex items-center gap-2">
                 <Navigation className="w-4 h-4 text-white" />
-                <span className="text-white font-bold text-sm">Safer Alternative Route</span>
+                <span className="text-white font-bold text-sm">{t('safer_alt_route')}</span>
                 <span className="ml-auto text-green-100 text-xs">
-                  {result.alternative_route.risk_level.toUpperCase()} risk
+                  {t(`risk_${result.alternative_route.risk_level}`)} {t('risk_label')}
                 </span>
               </div>
               <div className="bg-green-50 px-4 py-3 flex items-center justify-between">
                 <div className="text-sm text-green-800">
                   <p className="font-semibold">{result.alternative_route.distance} · {result.alternative_route.duration}</p>
                   <p className="text-xs text-green-600 mt-0.5">
-                    Risk score: {result.alternative_route.overall_risk.toFixed(0)}/80 vs {result.overall_risk.toFixed(0)}/80 on primary
+                    {t('flood_risk_label')}: {Math.round(result.alternative_route.overall_risk / 80 * 100)}% vs {Math.round(result.overall_risk / 80 * 100)}%
                   </p>
                 </div>
                 <CheckCircle className="w-6 h-6 text-green-500 shrink-0" />
               </div>
               <div className="px-4 py-2 bg-white text-xs text-gray-500">
-                Shown in green on the map
+                {t('shown_green')}
               </div>
             </div>
           )}
@@ -249,8 +249,8 @@ export default function RoutePanel({ onRouteResult }) {
             <div className="border border-gray-200 rounded-xl overflow-hidden">
               {/* Header */}
               <div className="bg-gray-50 px-4 py-2.5 flex items-center justify-between border-b border-gray-200">
-                <span className="text-xs font-bold text-gray-600 uppercase tracking-wide">Directions</span>
-                <span className="text-xs text-gray-400">{result.steps.length} steps</span>
+                <span className="text-xs font-bold text-gray-600 uppercase tracking-wide">{t('directions')}</span>
+                <span className="text-xs text-gray-400">{result.steps.length} {t('steps')}</span>
               </div>
 
               {/* Origin row */}
