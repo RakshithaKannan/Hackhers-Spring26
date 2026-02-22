@@ -415,29 +415,3 @@ function CommunitySection() {
     </section>
   )
 }
-
-/* ── 7. FOOTER CTA ───────────────────────────────────────────────────────── */
-function FooterCta() {
-  return (
-    <section className="relative py-32 px-6 water-bg overflow-hidden">
-      <div className="orb orb-1" style={{ opacity: 0.13 }} />
-      <div className="orb orb-2" style={{ opacity: 0.09 }} />
-      <Reveal className="relative z-10 text-center max-w-3xl mx-auto">
-        <img src="/logo.png" alt="WaterWise" className="h-16 mx-auto mb-8 opacity-90 drop-shadow-lg" />
-        <h2 className="text-4xl md:text-5xl font-black text-white mb-3">
-          Stay Safe.{' '}
-          <span className="gradient-text">Stay WaterWise.</span>
-        </h2>
-        <p className="text-sky-200/75 text-lg mb-10 max-w-xl mx-auto leading-relaxed">
-          Free. No app download. No login required to check flood risk.
-        </p>
-        <Link
-          to="/map"
-          className="inline-flex items-center gap-2 bg-sky-500 hover:bg-sky-400 text-white font-bold px-10 py-4 rounded-2xl text-lg shadow-lg shadow-sky-500/30 transition-all duration-300 hover:scale-[1.03]"
-        >
-          Open Live Map <ArrowRight className="w-5 h-5" />
-        </Link>
-      </Reveal>
-    </section>
-  )
-}
