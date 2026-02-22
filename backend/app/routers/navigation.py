@@ -188,7 +188,17 @@ async def _score_route(
             ))
 
     overall_risk = max(p.risk_score for p in risk_points) if risk_points else 0.0
-    return risk_points, warnings, overall_risk
+
+    usgs_live = any(v.get("site_name", "") != "NJ gauge (fallback)" for v in gauge_cache.values())
+    nws_live  = any(v.get("source") == "NWS" for v in nws_cache.values())
+    if usgs_live and nws_live:
+        confidence = "High"
+    elif usgs_live or nws_live:
+        confidence = "Medium"
+    else:
+        confidence = "Low"
+
+    return risk_points, warnings, overall_risk, confidence
 
 
 @router.post("/route", response_model=RouteResponse)
@@ -218,7 +228,7 @@ async def get_safe_route(body: RouteRequest):
     # Score the primary route (first result from Google — their best suggestion)
     primary = primary_routes[0]
     primary_nav = _parse_nav_steps(primary["raw_steps"])
-    primary_risk_pts, primary_warnings, primary_overall = await _score_route(
+    primary_risk_pts, primary_warnings, primary_overall, primary_confidence = await _score_route(
         primary["raw_steps"], dest_lat, dest_lng, now.month, now.hour, primary_nav
     )
 
@@ -243,7 +253,7 @@ async def get_safe_route(body: RouteRequest):
             if candidate["polyline"] == primary["polyline"]:
                 continue
             cand_nav = _parse_nav_steps(candidate["raw_steps"])
-            cand_pts, _, cand_overall = await _score_route(
+            cand_pts, _, cand_overall, _ = await _score_route(
                 candidate["raw_steps"], dest_lat, dest_lng, now.month, now.hour, cand_nav
             )
             cand_key = _alt_score_key((cand_pts, None, cand_overall))
@@ -276,6 +286,7 @@ async def get_safe_route(body: RouteRequest):
         alternative_route=alternative_route,
         steps=primary_nav,
         route_risk_points=primary_risk_pts,
+        confidence=primary_confidence,
     )
 
 

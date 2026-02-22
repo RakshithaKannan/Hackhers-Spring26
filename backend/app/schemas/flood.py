@@ -18,3 +18,4 @@ class FloodRiskResponse(BaseModel):
     is_flood_zone: bool
     recommendation: str
     data_sources: list[str]
+    confidence: str            # High | Medium | Low

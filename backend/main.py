@@ -12,12 +12,12 @@ async def lifespan(app: FastAPI):
     # Initialize DB and pre-load ML model on startup
     await init_db()
     from app.services.flood_ml import flood_model  # triggers model load/train
-    print("✅ SafeSphere backend ready")
+    print("✅ waterWise backend ready")
     yield
 
 
 app = FastAPI(
-    title="SafeSphere API",
+    title="waterWise API",
     description="Flood-aware navigation and safety for New Jersey",
     version="1.0.0",
     lifespan=lifespan,
@@ -40,4 +40,4 @@ app.include_router(community.router)
 
 @app.get("/health")
 async def health():
-    return {"status": "ok", "app": "SafeSphere"}
+    return {"status": "ok", "app": "waterWise"}

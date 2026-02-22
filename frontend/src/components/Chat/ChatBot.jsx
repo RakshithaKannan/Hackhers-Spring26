@@ -7,7 +7,7 @@ export default function ChatBot({ riskScore = 0, riskLevel = 'unknown', location
   const { t } = useLanguage()
   const [open, setOpen] = useState(false)
   const [messages, setMessages] = useState([
-    { role: 'assistant', content: "Hi! I'm SafeSphere AI. Tell me what you see on the road and I'll help you navigate safely." }
+    { role: 'assistant', content: "Hi! I'm waterWise AI. Tell me what you see on the road and I'll help you navigate safely." }
   ])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)

@@ -343,13 +343,27 @@ export default function MapView({ routeData }) {
           >
             <div className="text-sm max-w-xs">
               {selectedMarker.label && (
-                <p className="font-semibold text-gray-700 mb-1 text-xs">{selectedMarker.label}</p>
+                <p className="font-semibold text-gray-700 mb-2 text-xs">{selectedMarker.label}</p>
               )}
-              <p className="font-bold text-gray-800 mb-1">
-                {t('flood_risk')}: {Math.round(selectedMarker.risk_score / 80 * 100)}%
-                <span className="ml-1 capitalize text-gray-500">({selectedMarker.risk_level})</span>
-              </p>
-              <p className="text-gray-600">{selectedMarker.recommendation}</p>
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold">{t('risk_score_label')}</span>
+                <span className="font-bold text-gray-900 text-sm capitalize">
+                  {selectedMarker.risk_level} · {Math.round(selectedMarker.risk_score / 80 * 100)}%
+                </span>
+              </div>
+              {selectedMarker.confidence && (
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold">{t('confidence_label')}</span>
+                  <span className={`text-xs font-bold ${
+                    selectedMarker.confidence === 'High' ? 'text-emerald-600'
+                    : selectedMarker.confidence === 'Medium' ? 'text-amber-600'
+                    : 'text-red-600'
+                  }`}>
+                    {t(`confidence_${selectedMarker.confidence.toLowerCase()}`)}
+                  </span>
+                </div>
+              )}
+              <p className="text-gray-600 text-xs border-t border-gray-100 pt-1.5">{selectedMarker.recommendation}</p>
               {selectedMarker.is_flood_zone && (
                 <p className="mt-1 text-orange-600 font-semibold text-xs">⚠️ Known NJ Flood Zone</p>
               )}

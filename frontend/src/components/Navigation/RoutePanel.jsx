@@ -177,14 +177,38 @@ export default function RoutePanel({ onRouteResult }) {
             <span className="text-blue-200 text-sm">{result.distance}</span>
           </div>
 
-          {/* Flood risk */}
-          <div className={`border rounded-xl p-3 flex items-start gap-2 ${RISK_COLORS[level]}`}>
-            {level === 'low'
-              ? <CheckCircle className="w-4 h-4 mt-0.5 shrink-0" />
-              : <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />}
-            <p className="text-sm font-semibold">
-              {t('flood_risk_label')}: {t(`risk_${level}`)} ({Math.round(result.overall_risk / 80 * 100)}%)
-            </p>
+          {/* Flood risk + confidence */}
+          <div className={`border rounded-xl p-3 ${RISK_COLORS[level]}`}>
+            {/* Risk Score row */}
+            <div className="flex items-center gap-2">
+              {level === 'low'
+                ? <CheckCircle className="w-4 h-4 shrink-0" />
+                : <AlertTriangle className="w-4 h-4 shrink-0" />}
+              <span className="text-xs font-semibold uppercase tracking-wide opacity-70">{t('risk_score_label')}</span>
+              <span className="ml-auto text-sm font-bold">
+                {t(`risk_${level}`)} &nbsp;·&nbsp; {Math.round(result.overall_risk / 80 * 100)}%
+              </span>
+            </div>
+            {/* Confidence row */}
+            {result.confidence && (
+              <div className="flex items-center gap-2 mt-2 pt-2 border-t border-current/10">
+                <span className="text-xs font-semibold uppercase tracking-wide opacity-70">{t('confidence_label')}</span>
+                <span className={`ml-auto inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full ${
+                  result.confidence === 'High'
+                    ? 'bg-emerald-100 text-emerald-700'
+                    : result.confidence === 'Medium'
+                    ? 'bg-amber-100 text-amber-700'
+                    : 'bg-red-100 text-red-700'
+                }`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${
+                    result.confidence === 'High' ? 'bg-emerald-500'
+                    : result.confidence === 'Medium' ? 'bg-amber-500'
+                    : 'bg-red-500'
+                  }`} />
+                  {t(`confidence_${result.confidence.toLowerCase()}`)}
+                </span>
+              </div>
+            )}
           </div>
 
           {/* SafeZone button */}

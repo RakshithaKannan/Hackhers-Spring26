@@ -1,5 +1,5 @@
 """
-SafeSphere Flood Risk Scorer — transparent, rule-based system.
+waterWise Flood Risk Scorer — transparent, rule-based system.
 
 WHY NOT ML:
   The previous version trained a GradientBoostingRegressor on 2000 synthetic

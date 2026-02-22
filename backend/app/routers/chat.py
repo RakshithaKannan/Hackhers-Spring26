@@ -20,7 +20,7 @@ class ChatResponse(BaseModel):
 
 @router.post("/message", response_model=ChatResponse)
 async def chat(body: ChatMessage):
-    """Send a message to SafeSphere AI assistant."""
+    """Send a message to waterWise AI assistant."""
     reply = await get_ai_response(
         user_message=body.message,
         risk_score=body.risk_score,

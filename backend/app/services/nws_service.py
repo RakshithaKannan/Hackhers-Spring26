@@ -11,7 +11,7 @@ It says nothing about how much rain, so we use it directly as a probability sign
 import httpx
 
 NWS_BASE = "https://api.weather.gov"
-NWS_HEADERS = {"User-Agent": "SafeSphere/1.0 (safesphere-app@example.com)"}
+NWS_HEADERS = {"User-Agent": "waterWise/1.0 (waterwise-app@example.com)"}
 
 
 async def get_precip_forecast(lat: float, lng: float) -> dict:

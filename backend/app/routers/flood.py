@@ -33,8 +33,16 @@ async def get_flood_risk(body: FloodRiskRequest):
     )
 
     sources = ["Rule-based risk scorer", "USGS Water Services"]
-    if precip_data["source"] == "NWS":
+    nws_live   = precip_data["source"] == "NWS"
+    usgs_live  = gauge_data.get("site_name", "") != "NJ gauge (fallback)"
+    if nws_live:
         sources.append("National Weather Service")
+    if usgs_live and nws_live:
+        confidence = "High"
+    elif usgs_live or nws_live:
+        confidence = "Medium"
+    else:
+        confidence = "Low"
 
     return FloodRiskResponse(
         lat=body.lat,
@@ -47,4 +55,5 @@ async def get_flood_risk(body: FloodRiskRequest):
         is_flood_zone=result["is_flood_zone"],
         recommendation=result["recommendation"],
         data_sources=sources,
+        confidence=confidence,
     )

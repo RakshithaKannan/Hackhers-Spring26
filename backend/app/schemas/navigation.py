@@ -71,3 +71,4 @@ class RouteResponse(BaseModel):
     alternative_route: Optional[AlternativeRoute] = None
     steps: list[NavStep] = []
     route_risk_points: list[RouteRiskPoint] = []
+    confidence: str = "Medium"  # High | Medium | Low — based on live data sources used
