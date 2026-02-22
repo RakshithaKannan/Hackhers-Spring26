@@ -15,7 +15,7 @@ VALID_CATEGORIES = {"flood_report", "road_closure", "weather_warning"}
 
 
 @router.get("/posts", response_model=list[PostListOut])
-async def list_posts(
+async def list_posts()
     category: Optional[str] = None,
     limit: int = 50,
     db: AsyncSession = Depends(get_db),
