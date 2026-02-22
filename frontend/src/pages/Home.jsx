@@ -173,7 +173,7 @@ function MiniStatsSection() {
   const { t } = useLanguage()
   const items = [
     { value: '15 min', labelKey: 'update_interval' },
-    { value: '0–100%', labelKey: 'risk_score_range' },
+    { value: '0–80%', labelKey: 'risk_score_range' },
     { value: '6 hr',   labelKey: 'forecast_window' },
   ]
   return (

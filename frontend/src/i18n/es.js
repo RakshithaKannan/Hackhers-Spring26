@@ -21,7 +21,7 @@ export default {
   step_real_time_title: 'Seguimiento en Tiempo Real',
   step_real_time_desc: 'Reporta lecturas en vivo cada 15 minutos basándose en precipitaciones, niveles de agua, temporadas y zonas propensas a inundaciones.',
   step_ml_title: 'Predicción con IA',
-  step_ml_desc: 'Nuestro modelo predice el riesgo de inundación 2–6 horas antes con puntuaciones de 0–100%, ponderadas por datos de USGS y NWS.',
+  step_ml_desc: 'Nuestro modelo predice el riesgo de inundación 2–6 horas antes con puntuaciones de 0–80%, ponderadas por datos de USGS y NWS.',
   step_routing_title: 'Rutas Seguras',
   step_routing_desc: 'Cada paso de tu ruta es evaluado. Cuando el riesgo es Alto o Severo, se devuelve automáticamente una ruta alternativa más segura.',
   step_community_title: 'Reportes Comunitarios',

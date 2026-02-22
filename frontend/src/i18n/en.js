@@ -21,7 +21,7 @@ export default {
   step_real_time_title: 'Real-Time Tracking',
   step_real_time_desc: 'Reports live readings every 15 minutes based on precipitation, rising water levels, seasons, and flood-prone zones.',
   step_ml_title: 'Machine Learning Prediction',
-  step_ml_desc: 'Our gradient boosting model predicts flood risk 2–6 hours ahead with transparent scores from 0–100%, weighted by USGS and NWS data.',
+  step_ml_desc: 'Our gradient boosting model predicts flood risk 2–6 hours ahead with transparent scores from 0–80%, weighted by USGS and NWS data.',
   step_routing_title: 'Safe Routing',
   step_routing_desc: 'Every step of your route is risk-scored. When flood risk is High or Severe, a safer alternative route is returned automatically.',
   step_community_title: 'Community Reports',
