@@ -47,6 +47,8 @@ export default function Navbar() {
             { to: '/',          label: t('home') },
             { to: '/map',       label: t('map') },
             { to: '/community', label: t('community') },
+            { to: '/safezone',  label: t('safezone') },
+            { to: '/ai',        label: t('ai') },
           ].map(({ to, label }) => (
             <Link
               key={to}

@@ -9,7 +9,7 @@ import math
 from app.schemas.navigation import (
     RouteRequest, RouteResponse, FloodWarning,
     NavStep, RouteRiskPoint, AlternativeRoute,
-    SafeZoneRequest, SafeZoneResponse, SafePlace,
+    SafeZoneRequest, SafeZoneResponse, SafeZoneResult,
 )
 from app.config import settings
 from app.services.flood_ml import flood_model
@@ -309,63 +309,108 @@ async def _search_places(lat: float, lng: float, place_type: str) -> list[dict]:
         return []
 
 
+async def _search_places_keyword(lat: float, lng: float, keyword: str) -> list[dict]:
+    """Search Google Places Nearby using a keyword (e.g. 'emergency shelter')."""
+    params = {
+        "location": f"{lat},{lng}",
+        "radius":   20000,
+        "keyword":  keyword,
+        "key":      settings.GOOGLE_MAPS_API_KEY,
+    }
+    try:
+        async with httpx.AsyncClient(timeout=8.0) as client:
+            resp = await client.get(PLACES_URL, params=params)
+        return resp.json().get("results", [])
+    except Exception:
+        return []
+
+
+async def _nearest_of_type(
+    lat: float, lng: float, place_type: str | None, keyword: str | None, label: str
+) -> dict | None:
+    """Return the closest candidate of a given Places type or keyword, or None."""
+    if keyword:
+        places = await _search_places_keyword(lat, lng, keyword)
+    else:
+        places = await _search_places(lat, lng, place_type)
+
+    best = None
+    for p in places:
+        loc = p.get("geometry", {}).get("location", {})
+        plat, plng = loc.get("lat"), loc.get("lng")
+        if plat is None or plng is None:
+            continue
+        dist = _haversine_km(lat, lng, plat, plng)
+        if best is None or dist < best["distance_km"]:
+            best = {
+                "place_name":  p.get("name", "Unknown"),
+                "place_type":  label,
+                "lat":         plat,
+                "lng":         plng,
+                "distance_km": dist,
+                "vicinity":    p.get("vicinity", ""),
+            }
+    return best
+
+
 @router.post("/safezone", response_model=SafeZoneResponse)
 async def get_safezone(body: SafeZoneRequest):
     """
-    Find the nearest safety location (police, hospital, fire station, transit)
-    to the given coordinates and return walking/driving directions there.
-
-    Intended for use when flood risk >= 60/80 (High or Severe).
+    Accept a free-text location, geocode it, then find the nearest hospital
+    and emergency shelter and return driving directions to each.
     """
     if not settings.GOOGLE_MAPS_API_KEY:
         raise HTTPException(status_code=503, detail="Google Maps API key not configured")
 
-    # Search all safe place types in parallel
-    all_results = await asyncio.gather(
-        *[_search_places(body.lat, body.lng, pt) for pt in SAFE_PLACE_TYPES]
+    # Geocode the user's text address
+    try:
+        user_lat, user_lng = await _geocode(body.location)
+    except HTTPException:
+        raise HTTPException(status_code=400, detail=f"Could not find location: {body.location}")
+
+    # Resolve a display address for the geocoded point
+    async with httpx.AsyncClient(timeout=8.0) as hclient:
+        rev = await hclient.get(
+            "https://maps.googleapis.com/maps/api/geocode/json",
+            params={"latlng": f"{user_lat},{user_lng}", "key": settings.GOOGLE_MAPS_API_KEY},
+        )
+    rev_data = rev.json()
+    display_addr = (
+        rev_data["results"][0]["formatted_address"]
+        if rev_data.get("results")
+        else body.location
     )
 
-    # Flatten and attach distance + type label to every candidate
-    candidates: list[dict] = []
-    for place_type, results in zip(SAFE_PLACE_TYPES, all_results):
-        for place in results:
-            loc = place.get("geometry", {}).get("location", {})
-            plat, plng = loc.get("lat"), loc.get("lng")
-            if plat is None or plng is None:
-                continue
-            candidates.append({
-                "name":       place.get("name", "Unknown"),
-                "place_type": SAFE_PLACE_LABELS[place_type],
-                "lat":        plat,
-                "lng":        plng,
-                "distance_km": _haversine_km(body.lat, body.lng, plat, plng),
-                "vicinity":   place.get("vicinity", ""),
-            })
+    # Search hospital and shelter in parallel
+    hospital_cand, shelter_cand = await asyncio.gather(
+        _nearest_of_type(user_lat, user_lng, "hospital", None, "Hospital"),
+        _nearest_of_type(user_lat, user_lng, None, "emergency shelter", "Emergency Shelter"),
+    )
 
+    candidates = [c for c in [hospital_cand, shelter_cand] if c is not None]
     if not candidates:
-        raise HTTPException(status_code=404, detail="No safe locations found within 10 km")
+        raise HTTPException(status_code=404, detail="No hospitals or shelters found within 20 km")
 
-    # Pick the closest one overall
-    nearest = min(candidates, key=lambda c: c["distance_km"])
+    # Get driving directions for each candidate in parallel
+    origin_str = f"{user_lat},{user_lng}"
 
-    # Get driving directions from user location to nearest safe place
-    origin_str = f"{body.lat},{body.lng}"
-    dest_str   = f"{nearest['lat']},{nearest['lng']}"
-    routes = await _get_directions(origin_str, dest_str)
-    route = routes[0]
-    nav_steps = _parse_nav_steps(route["raw_steps"])
+    async def _build_result(cand: dict) -> SafeZoneResult:
+        dest_str = f"{cand['lat']},{cand['lng']}"
+        routes = await _get_directions(origin_str, dest_str)
+        route = routes[0]
+        return SafeZoneResult(
+            place_name=cand["place_name"],
+            place_type=cand["place_type"],
+            vicinity=cand["vicinity"],
+            distance_km=cand["distance_km"],
+            distance=route["distance"],
+            duration=route["duration"],
+            steps=_parse_nav_steps(route["raw_steps"]),
+        )
 
-    dist_text = f"{nearest['distance_km']:.1f} km"
-    message = (
-        f"Nearest {nearest['place_type']}: {nearest['name']} "
-        f"({dist_text} away). Route calculated — proceed to safety immediately."
-    )
+    results = await asyncio.gather(*[_build_result(c) for c in candidates])
 
     return SafeZoneResponse(
-        safe_place=SafePlace(**nearest),
-        distance=route["distance"],
-        duration=route["duration"],
-        polyline=route["polyline"],
-        steps=nav_steps,
-        message=message,
+        user_location=display_addr,
+        results=list(results),
     )

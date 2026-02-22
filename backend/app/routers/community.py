@@ -48,7 +48,7 @@ async def list_posts(
     return output
 
 
-@router.post("/posts", response_model=PostOut, status_code=201)
+@router.post("/posts", response_model=PostListOut, status_code=201)
 async def create_post(
     body: PostCreate,
     current_user: User = Depends(get_current_user),
@@ -65,7 +65,16 @@ async def create_post(
     db.add(post)
     await db.commit()
     await db.refresh(post)
-    return post
+    return PostListOut(
+        id=post.id,
+        author_username=post.author_username,
+        category=post.category,
+        title=post.title,
+        body=post.body,
+        location_name=post.location_name,
+        created_at=post.created_at,
+        comment_count=0,
+    )
 
 
 @router.get("/posts/{post_id}", response_model=PostOut)

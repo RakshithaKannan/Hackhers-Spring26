@@ -42,26 +42,22 @@ class AlternativeRoute(BaseModel):
 
 
 class SafeZoneRequest(BaseModel):
-    lat: float
-    lng: float
+    location: str   # free-text address entered by the user
 
 
-class SafePlace(BaseModel):
-    name: str
-    place_type: str
-    lat: float
-    lng: float
-    distance_km: float
+class SafeZoneResult(BaseModel):
+    place_name: str
+    place_type: str     # "Hospital" | "Emergency Shelter"
     vicinity: str
+    distance_km: float
+    distance: str       # "2.3 km"
+    duration: str       # "8 mins"
+    steps: list[NavStep]
 
 
 class SafeZoneResponse(BaseModel):
-    safe_place: SafePlace
-    distance: str
-    duration: str
-    polyline: str
-    steps: list[NavStep]
-    message: str
+    user_location: str          # resolved display address
+    results: list[SafeZoneResult]
 
 
 class RouteResponse(BaseModel):

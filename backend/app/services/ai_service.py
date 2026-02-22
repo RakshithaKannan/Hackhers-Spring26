@@ -3,11 +3,19 @@ Gemini-powered AI Assistant.
 Combines ML flood risk data with real-world observations from the user.
 """
 
+import asyncio
 from google import genai
 from google.genai import types
 from app.config import settings
 
 client = genai.Client(api_key=settings.GEMINI_API_KEY)
+
+# Models tried in order — first one to succeed wins
+MODELS = [
+    "gemini-2.5-flash",
+    "gemini-2.0-flash",
+    "gemini-2.0-flash-lite",
+]
 
 SYSTEM_PROMPT = """You are SafeSphere AI, an emergency flood safety assistant for New Jersey drivers.
 Your job is to help users navigate safely during flood events.
@@ -29,6 +37,16 @@ Never:
 """
 
 
+async def _try_model(model: str, contents, config) -> str:
+    """Attempt a single model call, raising on any error."""
+    response = await client.aio.models.generate_content(
+        model=model,
+        contents=contents,
+        config=config,
+    )
+    return response.text.strip()
+
+
 async def get_ai_response(
     user_message: str,
     risk_score: float = 0.0,
@@ -48,21 +66,31 @@ async def get_ai_response(
             history.append(types.Content(role=role, parts=[types.Part(text=msg["content"])]))
 
     full_message = f"{context_message}\n\nUser says: {user_message}"
+    contents = history + [types.Content(role="user", parts=[types.Part(text=full_message)])]
 
-    try:
-        response = await client.aio.models.generate_content(
-            model="gemini-2.0-flash",
-            contents=history + [types.Content(role="user", parts=[types.Part(text=full_message)])],
-            config=types.GenerateContentConfig(
-                system_instruction=SYSTEM_PROMPT,
-                max_output_tokens=200,
-                temperature=0.4,
-            ),
-        )
-        return response.text.strip()
-    except Exception as e:
-        return (
-            "I'm having trouble connecting right now. "
-            "If you see water on the road, do NOT drive through it. "
-            "Turn around and find an alternate route. Stay safe."
-        )
+    config = types.GenerateContentConfig(
+        system_instruction=SYSTEM_PROMPT,
+        max_output_tokens=500,
+        temperature=0.4,
+        thinking_config=types.ThinkingConfig(thinking_budget=0),
+    )
+
+    last_error = None
+    for model in MODELS:
+        try:
+            text = await asyncio.wait_for(_try_model(model, contents, config), timeout=15.0)
+            if text:
+                return text
+        except asyncio.TimeoutError:
+            print(f"[Gemini] Timeout on {model}")
+            last_error = "timeout"
+        except Exception as e:
+            print(f"[Gemini] {model} failed — {type(e).__name__}: {e}")
+            last_error = str(e)
+
+    print(f"[Gemini] All models failed. Last error: {last_error}")
+    return (
+        "I'm having trouble connecting right now. "
+        "If you see water on the road, do NOT drive through it. "
+        "Turn around and find an alternate route. Stay safe."
+    )

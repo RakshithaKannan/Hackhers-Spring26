@@ -5,6 +5,7 @@ import {
   Activity, ShieldAlert, Users, BarChart3,
   ArrowRight, MessageSquare,
 } from 'lucide-react'
+import { useLanguage } from '../context/LanguageContext'
 
 function useInView(threshold = 0.12) {
   const ref = useRef(null)
@@ -41,14 +42,15 @@ export default function Home() {
       <HeroSection />
       <HowItWorksSection />
       <MiniStatsSection />
-      <TurnAroundSection />
       <CommunitySection />
+      <TurnAroundSection />
     </div>
   )
 }
 
 /* ── 1. HERO ─────────────────────────────────────────────────────────────── */
 function HeroSection() {
+  const { t } = useLanguage()
   return (
     <section className="relative min-h-[calc(100vh-64px)] flex items-center justify-center overflow-hidden water-bg">
       <video
@@ -65,32 +67,38 @@ function HeroSection() {
       <div className="relative z-10 text-center px-6 max-w-5xl mx-auto py-24">
         <div className="animate-badge inline-flex items-center gap-2 glass rounded-full px-5 py-2 mb-8 text-sky-200 text-sm font-medium">
           <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-          Live Flood Intelligence
+          {t('live_flood_intel')}
         </div>
         <h1
-          className="animate-hero-title gradient-text text-glow font-black tracking-tight leading-none mb-4"
+          className="animate-hero-title font-black tracking-tight leading-none mb-4"
           style={{ fontSize: 'clamp(3.8rem, 13vw, 9rem)' }}
         >
-          waterWise
+          <span className="gradient-text text-glow">water</span><span style={{
+            background: 'linear-gradient(135deg, #4ade80 0%, #22c55e 50%, #16a34a 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+            filter: 'drop-shadow(0 0 40px rgba(34,197,94,0.55))',
+          }}>Wise</span>
         </h1>
         <p
           className="animate-hero-slogan text-white/90 font-semibold tracking-widest uppercase mb-5"
           style={{ fontSize: 'clamp(0.8rem, 2vw, 1.1rem)', letterSpacing: '0.18em' }}
         >
-          Stay Safe. Stay WaterWise.
+          {t('hero_slogan')}
         </p>
         <p
           className="animate-hero-sub text-sky-100/70 font-light max-w-xl mx-auto mb-12 leading-relaxed"
           style={{ fontSize: 'clamp(1rem, 2.2vw, 1.25rem)' }}
         >
-          Real-time flood risk. Safe routing. Instant SafeZone rescue.
+          {t('hero_sub')}
         </p>
         <div className="animate-hero-cta flex justify-center">
           <Link
             to="/map"
             className="group inline-flex items-center gap-2 bg-sky-500 hover:bg-sky-400 text-white font-bold px-10 py-4 rounded-2xl text-lg shadow-lg shadow-sky-500/40 hover:shadow-sky-400/50 transition-all duration-300 hover:scale-[1.04]"
           >
-            Get Safe Route
+            {t('get_safe_route')}
             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-200" />
           </Link>
         </div>
@@ -107,50 +115,21 @@ function HeroSection() {
 
 /* ── 2. HOW IT WORKS — 5 cards with feature icons ───────────────────────── */
 function HowItWorksSection() {
+  const { t } = useLanguage()
   const steps = [
-    {
-      n: '01',
-      icon: <Activity className="w-6 h-6" />,
-      accent: 'text-sky-600 bg-sky-50',
-      title: 'Real-Time Tracking',
-      desc: 'Reports live readings every 15 minutes based on precipitation, rising water levels, seasons, and flood-prone zones.',
-    },
-    {
-      n: '02',
-      icon: <BarChart3 className="w-6 h-6" />,
-      accent: 'text-violet-600 bg-violet-50',
-      title: 'Machine Learning Prediction',
-      desc: 'Our gradient boosting model predicts flood risk 2–6 hours ahead with transparent scores from 0–80%, weighted by USGS and NWS data.',
-    },
-    {
-      n: '03',
-      icon: <Navigation className="w-6 h-6" />,
-      accent: 'text-emerald-600 bg-emerald-50',
-      title: 'Safe Routing',
-      desc: 'Every step of your route is risk-scored. When flood risk is High or Severe, a safer alternative route is returned automatically.',
-    },
-    {
-      n: '04',
-      icon: <Users className="w-6 h-6" />,
-      accent: 'text-amber-600 bg-amber-50',
-      title: 'Community Reports',
-      desc: 'Real-time crowdsourced reports of flooded roads, closures, and hazards from other drivers — safety through shared knowledge.',
-    },
-    {
-      n: '05',
-      icon: <MessageSquare className="w-6 h-6" />,
-      accent: 'text-red-600 bg-red-50',
-      title: 'AI Assistant',
-      desc: 'Powered by Gemini, our AI chatbot answers flood questions, gives safety advice, and interprets your current risk score.',
-    },
+    { n: '01', icon: <Activity className="w-6 h-6" />,    accent: 'text-sky-600 bg-sky-50',     titleKey: 'step_real_time_title', descKey: 'step_real_time_desc' },
+    { n: '02', icon: <BarChart3 className="w-6 h-6" />,   accent: 'text-violet-600 bg-violet-50', titleKey: 'step_ml_title',        descKey: 'step_ml_desc' },
+    { n: '03', icon: <Navigation className="w-6 h-6" />,  accent: 'text-emerald-600 bg-emerald-50', titleKey: 'step_routing_title', descKey: 'step_routing_desc' },
+    { n: '04', icon: <Users className="w-6 h-6" />,       accent: 'text-amber-600 bg-amber-50',  titleKey: 'step_community_title', descKey: 'step_community_desc' },
+    { n: '05', icon: <MessageSquare className="w-6 h-6" />, accent: 'text-red-600 bg-red-50',    titleKey: 'step_ai_title',        descKey: 'step_ai_desc' },
   ]
 
   return (
     <section className="py-28 px-6 bg-slate-50">
       <div className="max-w-6xl mx-auto">
         <Reveal className="text-center mb-16">
-          <p className="text-sky-500 font-semibold text-sm uppercase tracking-widest mb-3">How it works</p>
-          <h2 className="text-4xl md:text-5xl font-bold text-slate-900">Built on real data.</h2>
+          <p className="text-sky-500 font-semibold text-sm uppercase tracking-widest mb-3">{t('how_it_works_label')}</p>
+          <h2 className="text-4xl md:text-5xl font-bold text-slate-900">{t('built_on_data')}</h2>
         </Reveal>
 
         {/* Row 1: 3 cards */}
@@ -174,39 +153,36 @@ function HowItWorksSection() {
   )
 }
 
-/* Step card — includes the colored icon badge from the old features section */
+/* Step card */
 function StepCard({ s }) {
+  const { t } = useLanguage()
   return (
     <div className="card-pop bg-white rounded-3xl p-8 shadow-sm border border-slate-100 h-full">
-      {/* Colored icon badge (from features section) + step number */}
       <div className="flex items-center gap-3 mb-5">
-        <div className={`inline-flex p-2.5 rounded-xl ${s.accent}`}>
-          {s.icon}
-        </div>
-        <span className="text-xs font-bold text-slate-400 bg-slate-50 border border-slate-100 rounded-lg px-2.5 py-1">
-          {s.n}
-        </span>
+        <div className={`inline-flex p-2.5 rounded-xl ${s.accent}`}>{s.icon}</div>
+        <span className="text-xs font-bold text-slate-400 bg-slate-50 border border-slate-100 rounded-lg px-2.5 py-1">{s.n}</span>
       </div>
-      <h3 className="text-xl font-bold text-slate-900 mb-3">{s.title}</h3>
-      <p className="text-slate-500 text-sm leading-relaxed">{s.desc}</p>
+      <h3 className="text-xl font-bold text-slate-900 mb-3">{t(s.titleKey)}</h3>
+      <p className="text-slate-500 text-sm leading-relaxed">{t(s.descKey)}</p>
     </div>
   )
 }
 
 /* ── 3. MINI STATS ───────────────────────────────────────────────────────── */
 function MiniStatsSection() {
+  const { t } = useLanguage()
   const items = [
-    { value: '15 min', label: 'Update Interval' },
-    { value: '0–80%',    label: 'Risk Score Range' },
-    { value: '6 hr',   label: 'Forecast Window' },
+    { value: '15 min', labelKey: 'update_interval' },
+    { value: '0–80',   labelKey: 'risk_score_range' },
+    { value: '6 hr',   labelKey: 'forecast_window' },
   ]
   return (
     <section className="py-10 px-6 bg-white border-y border-slate-100">
       <div className="max-w-3xl mx-auto flex flex-col sm:flex-row items-center justify-center divide-y sm:divide-y-0 sm:divide-x divide-slate-200">
         {items.map((item) => (
-          <div key={item.label} className="flex-1 text-center px-8 py-4">
+          <div key={item.labelKey} className="flex-1 text-center px-8 py-4">
             <p className="text-2xl font-black text-sky-600">{item.value}</p>
-            <p className="text-slate-500 text-xs font-medium mt-0.5 uppercase tracking-wide">{item.label}</p>
+            <p className="text-slate-500 text-xs font-medium mt-0.5 uppercase tracking-wide">{t(item.labelKey)}</p>
           </div>
         ))}
       </div>
@@ -216,6 +192,7 @@ function MiniStatsSection() {
 
 /* ── 4. TURN AROUND DON'T DROWN — compact ocean blue ────────────────────── */
 function TurnAroundSection() {
+  const { t } = useLanguage()
   const [ref, visible] = useInView(0.2)
   return (
     <section
@@ -257,12 +234,12 @@ function TurnAroundSection() {
         {/* Divider */}
         <div className="hidden md:block w-px h-24 bg-sky-700/40 shrink-0" />
 
-        {/* Right: supporting text + icon */}
+        {/* Right: supporting text + icon centered above text */}
         <div className={`text-center transition-[opacity,transform] duration-600 delay-300 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-          <AlertTriangle className="w-8 h-8 text-sky-400 mb-3 mx-auto md:mx-0"
+          <AlertTriangle className="w-8 h-8 text-sky-400 mb-2 mx-auto"
             style={{ filter: 'drop-shadow(0 0 10px rgba(56,189,248,0.5))' }} />
-          <p className="text-sky-100 text-base font-semibold mb-1">Never drive through flooded roads.</p>
-          <p className="text-sky-300/70 text-sm">WaterWise warns you before you get there.</p>
+          <p className="text-sky-100 text-base font-semibold mb-1">{t('turn_around_warning')}</p>
+          <p className="text-sky-300/70 text-sm">{t('turn_around_sub')}</p>
         </div>
       </div>
     </section>
@@ -271,6 +248,7 @@ function TurnAroundSection() {
 
 /* ── 5. COMMUNITY — compact ──────────────────────────────────────────────── */
 function CommunitySection() {
+  const { t } = useLanguage()
   return (
     <section className="py-12 px-6 bg-slate-50">
       <div className="max-w-3xl mx-auto">
@@ -278,16 +256,14 @@ function CommunitySection() {
           <div className="bg-gradient-to-br from-sky-500 to-cyan-600 rounded-2xl p-8 md:p-10 flex flex-col md:flex-row items-center gap-6 text-white shadow-xl shadow-sky-500/15">
             <Users className="w-12 h-12 text-sky-100 shrink-0" />
             <div className="flex-1 text-center md:text-left">
-              <h2 className="text-xl font-bold mb-1">Help your community.</h2>
-              <p className="text-sky-100/80 text-sm leading-relaxed">
-                Report flooded roads, closures, and hazards. Every post helps someone else stay safe.
-              </p>
+              <h2 className="text-xl font-bold mb-1">{t('help_community')}</h2>
+              <p className="text-sky-100/80 text-sm leading-relaxed">{t('help_community_desc')}</p>
             </div>
             <Link
               to="/community"
               className="shrink-0 inline-flex items-center gap-2 bg-white text-sky-600 font-bold px-6 py-2.5 rounded-xl text-sm hover:bg-sky-50 transition-colors shadow-md"
             >
-              View Reports <ArrowRight className="w-4 h-4" />
+              {t('view_reports')} <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
         </Reveal>
