@@ -7,8 +7,8 @@
  *   - All existing auth / language / navigation logic preserved
  */
 
-import { useState, useEffect } from 'react'
-import { Link, useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useLanguage } from '../context/LanguageContext'
 
@@ -16,20 +16,9 @@ export default function Navbar() {
   const { user, logout } = useAuth()
   const { t, lang, toggleLanguage } = useLanguage()
   const navigate = useNavigate()
-  const location = useLocation()
 
-  // Only the home page (/) gets the transparent-over-hero effect.
-  // All other pages (map, community, login, register) always show solid glass.
-  const isHome = location.pathname === '/'
-
-  const [scrolled, setScrolled] = useState(!isHome)
-  useEffect(() => {
-    if (!isHome) { setScrolled(true); return }
-    const onScroll = () => setScrolled(window.scrollY > 40)
-    window.addEventListener('scroll', onScroll, { passive: true })
-    onScroll()
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [isHome])
+  // Always solid — locked in on every page including the hero
+  const scrolled = true
 
   const handleLogout = () => {
     logout()
