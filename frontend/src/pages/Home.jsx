@@ -71,7 +71,7 @@ function HeroSection() {
           className="animate-hero-title gradient-text text-glow font-black tracking-tight leading-none mb-4"
           style={{ fontSize: 'clamp(3.8rem, 13vw, 9rem)' }}
         >
-          WaterWise
+          waterWise
         </h1>
         <p
           className="animate-hero-slogan text-white/90 font-semibold tracking-widest uppercase mb-5"
