@@ -8,7 +8,7 @@ from google import genai
 from google.genai import types
 from app.config import settings
 
-client = genai.Client(api_key=settings.GEMINI_API_KEY)
+client = genai.Client(api_key=settings.GEMINI_API_KEY) if settings.GEMINI_API_KEY else None
 
 # Models tried in order — first one to succeed wins
 MODELS = [
@@ -75,6 +75,11 @@ async def get_ai_response(
         temperature=0.4,
         thinking_config=types.ThinkingConfig(thinking_budget=0),
     )
+
+    if not client:
+        return (
+            "AI assistant is not configured. Please set GEMINI_API_KEY in your .env file."
+        )
 
     last_error = None
     for model in MODELS:

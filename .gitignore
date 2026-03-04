@@ -14,6 +14,9 @@ venv/
 *.db
 *.sqlite
 
+# ML model artifacts (auto-generated on startup)
+*.joblib
+
 # Node
 node_modules/
 dist/
